@@ -1,0 +1,33 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Burger Background -->
+  <circle cx="100" cy="100" r="95" fill="#f8f9fa" stroke="#e9ecef" stroke-width="2"/>
+  
+  <!-- Top Bun -->
+  <ellipse cx="100" cy="70" rx="45" ry="15" fill="#d4a574"/>
+  <ellipse cx="100" cy="65" rx="40" ry="12" fill="#e6c08a"/>
+  
+  <!-- Sesame Seeds -->
+  <circle cx="85" cy="62" r="2" fill="#f4e4bc"/>
+  <circle cx="105" cy="60" r="2" fill="#f4e4bc"/>
+  <circle cx="115" cy="68" r="2" fill="#f4e4bc"/>
+  
+  <!-- Lettuce -->
+  <ellipse cx="100" cy="85" rx="42" ry="8" fill="#4caf50"/>
+  
+  <!-- Cheese -->
+  <ellipse cx="100" cy="95" rx="40" ry="6" fill="#ffc107"/>
+  
+  <!-- Meat Patty -->
+  <ellipse cx="100" cy="105" rx="38" ry="10" fill="#8b4513"/>
+  
+  <!-- Tomato -->
+  <ellipse cx="100" cy="115" rx="35" ry="5" fill="#f44336"/>
+  
+  <!-- Bottom Bun -->
+  <ellipse cx="100" cy="130" rx="45" ry="15" fill="#d4a574"/>
+  
+  <!-- Text -->
+  <text x="100" y="170" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#666">
+    Quarter Pounder
+  </text>
+</svg>

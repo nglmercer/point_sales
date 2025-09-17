@@ -1,0 +1,30 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <circle cx="100" cy="100" r="95" fill="#f8f9fa" stroke="#e9ecef" stroke-width="2"/>
+  
+  <!-- Fries Container -->
+  <rect x="70" y="120" width="60" height="40" fill="#dc3545" rx="5"/>
+  
+  <!-- McDonald's M -->
+  <text x="100" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#ffc107">M</text>
+  
+  <!-- Individual Fries -->
+  <rect x="75" y="80" width="4" height="45" fill="#ffc107" rx="2"/>
+  <rect x="82" y="75" width="4" height="50" fill="#ffc107" rx="2"/>
+  <rect x="89" y="85" width="4" height="40" fill="#ffc107" rx="2"/>
+  <rect x="96" y="70" width="4" height="55" fill="#ffc107" rx="2"/>
+  <rect x="103" y="78" width="4" height="47" fill="#ffc107" rx="2"/>
+  <rect x="110" y="82" width="4" height="43" fill="#ffc107" rx="2"/>
+  <rect x="117" y="76" width="4" height="49" fill="#ffc107" rx="2"/>
+  
+  <!-- Salt dots -->
+  <circle cx="85" cy="90" r="1" fill="#ffffff" opacity="0.8"/>
+  <circle cx="95" cy="85" r="1" fill="#ffffff" opacity="0.8"/>
+  <circle cx="105" cy="95" r="1" fill="#ffffff" opacity="0.8"/>
+  <circle cx="115" cy="88" r="1" fill="#ffffff" opacity="0.8"/>
+  
+  <!-- Text -->
+  <text x="100" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#666">
+    Large Fries
+  </text>
+</svg>

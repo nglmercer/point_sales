@@ -1,7 +1,5 @@
 ---
-import PointOfSales from '../components/PointOfSales.vue';
-import '../styles/global.css';
-
+import SidebarNavDemo from '../components/SidebarNavDemo.vue';
 ---
 
 <html lang="en">
@@ -10,9 +8,10 @@ import '../styles/global.css';
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Food Point of Sales</title>
+		<title>SidebarNav Component Demo</title>
+		<link rel="stylesheet" href="/src/styles/global.css" />
 	</head>
 	<body class="bg-gray-100 font-sans">
-		<PointOfSales client:only="vue" />
+		<SidebarNavDemo client:only="vue" />
 	</body>
 </html>

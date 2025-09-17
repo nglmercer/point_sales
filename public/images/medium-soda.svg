@@ -1,0 +1,30 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <circle cx="100" cy="100" r="95" fill="#f8f9fa" stroke="#e9ecef" stroke-width="2"/>
+  
+  <!-- Cup -->
+  <path d="M75 160 L80 80 L120 80 L125 160 Z" fill="#ffffff" stroke="#e9ecef" stroke-width="2"/>
+  
+  <!-- Lid -->
+  <ellipse cx="100" cy="80" rx="22" ry="8" fill="#333333"/>
+  
+  <!-- Straw -->
+  <rect x="98" y="50" width="4" height="40" fill="#ff6b6b" rx="2"/>
+  
+  <!-- Drink -->
+  <path d="M82 85 L83 155 L117 155 L118 85 Z" fill="#8b4513"/>
+  
+  <!-- Bubbles -->
+  <circle cx="90" cy="100" r="2" fill="#ffffff" opacity="0.6"/>
+  <circle cx="105" cy="110" r="1.5" fill="#ffffff" opacity="0.6"/>
+  <circle cx="95" cy="125" r="1" fill="#ffffff" opacity="0.6"/>
+  <circle cx="110" cy="135" r="1.5" fill="#ffffff" opacity="0.6"/>
+  
+  <!-- McDonald's Logo -->
+  <text x="100" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#ffc107">M</text>
+  
+  <!-- Text -->
+  <text x="100" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#666">
+    Medium Soda
+  </text>
+</svg>
