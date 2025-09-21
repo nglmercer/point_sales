@@ -70,8 +70,6 @@
     "emailAddress": "Correo Electrónico",
     "emailRequired": "Correo Electrónico *",
     "phoneNumber": "Número de Teléfono",
-    "address": "Dirección",
-    "orderType": "Tipo de Orden",
     "orderTypeRequired": "Tipo de Orden *",
     "selectOrderType": "Selecciona el tipo de orden",
     "dineIn": "Para Comer Aquí",

@@ -1,9 +1,23 @@
 <template>
   <div class="bg-white shadow-sm border-b p-4 w-full">
     <div class="flex items-center justify-between w-full">
-      <div class="text-yellow-500 text-2xl font-bold">M</div>
+      <!-- Left side: Back button or Logo -->
+      <div class="flex items-center">
+        <button 
+          v-if="showBackButton"
+          class="p-2 mr-2 hover:bg-gray-100 rounded-lg transition-colors"
+          @click="$emit('back-click')"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </button>
+        <div class="text-yellow-500 text-2xl font-bold">M</div>
+      </div>
+          <!-- Language Switcher Component -->
+    <LanguageSwitcher />
+      <!-- Right side: Cart Icon -->
       <div class="flex items-center space-x-4">
-        <!-- Cart Icon with Badge -->
         <button 
           class="relative p-2"
           @click="$emit('cart-click')"
@@ -24,12 +38,17 @@
 </template>
 
 <script setup>
+import LanguageSwitcher from './LanguageSwitcher.vue'
 defineProps({
   cartItemCount: {
     type: Number,
     default: 0
+  },
+  showBackButton: {
+    type: Boolean,
+    default: false
   }
 })
 
-defineEmits(['cart-click'])
+defineEmits(['cart-click', 'back-click'])
 </script>

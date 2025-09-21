@@ -3,26 +3,17 @@
     <!-- Mobile Header -->
     <MobileHeader 
       :cart-item-count="cartItemCount"
+      :show-back-button="currentMobileView === 'cart'"
       @cart-click="$emit('tab-click', 'cart')"
-    />
-
-    <!-- Mobile Navigation Tabs -->
-    <MobileTabNavigation
-      :current-tab="currentMobileView"
-      :cart-item-count="cartItemCount"
-      @tab-click="handleTabClick"
+      @back-click="$emit('tab-click', 'menu')"
     />
 
     <!-- Mobile Content -->
     <div class="flex-1 overflow-hidden pb-20 w-full">
-      <!-- Unified Menu View -->
+      <!-- Menu View -->
       <div 
         v-show="currentMobileView === 'menu'" 
-        id="panel-menu"
         class="h-full overflow-y-auto w-full"
-        role="tabpanel"
-        aria-labelledby="tab-menu"
-        :aria-hidden="currentMobileView !== 'menu'"
       >
         <div class="p-4 w-full">
           <!-- Search Bar -->
@@ -47,35 +38,15 @@
       <!-- Cart View -->
       <div 
         v-show="currentMobileView === 'cart'" 
-        id="panel-cart"
         class="h-full"
-        role="tabpanel"
-        aria-labelledby="tab-cart"
-        :aria-hidden="currentMobileView !== 'cart'"
       >
-     <OrderSummary 
-            :cart-items="cartItems"
-            @update-quantity="(productId, quantity) => emit('update-quantity', productId, quantity)"
-            @remove-item="(productId) => emit('remove-item', productId)"
-            @clear-cart="() => emit('clear-cart')"
-            @process-payment="() => emit('process-payment')"
-            @show-ticket-form="() => emit('show-ticket-form')"
-          />
-      </div>
-
-      <!-- Ticket View -->
-      <div 
-        v-show="currentMobileView === 'ticket'" 
-        id="panel-ticket"
-        class="h-full"
-        role="tabpanel"
-        aria-labelledby="tab-ticket"
-        :aria-hidden="currentMobileView !== 'ticket'"
-      >
-        <TicketForm 
+        <OrderSummary 
           :cart-items="cartItems"
-          :mobile="true"
-          @ticket-generated="$emit('ticket-generated', $event)"
+          @update-quantity="(productId, quantity) => emit('update-quantity', productId, quantity)"
+          @remove-item="(productId) => emit('remove-item', productId)"
+          @clear-cart="() => emit('clear-cart')"
+          @process-payment="() => emit('process-payment')"
+          @show-ticket-form="() => emit('show-ticket-form')"
         />
       </div>
     </div>
@@ -117,12 +88,10 @@
 
 <script setup>
 import MobileHeader from './MobileHeader.vue'
-import MobileTabNavigation from './MobileTabNavigation.vue'
 import NavigationContainer from './NavigationContainer.vue'
 import SearchBar from './SearchBar.vue'
 import ProductGrid from './ProductGrid.vue'
 import OrderSummary from './OrderSummary.vue'
-import TicketForm from './TicketForm.vue'
 
 defineProps({
   currentMobileView: {
@@ -164,11 +133,6 @@ const emit = defineEmits([
   'clear-cart',
   'process-payment',
   'show-ticket-form',
-  'ticket-generated',
   'category-nav-click'
 ])
-
-const handleTabClick = (tabName) => {
-  emit('tab-click', tabName)
-}
 </script>

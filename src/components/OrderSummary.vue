@@ -16,7 +16,7 @@
       </div>
     </div>
     
-    <div :class="mobile ? 'flex-1 overflow-y-auto p-4' : 'flex-1 overflow-y-auto p-4'">
+    <div :class="mobile ? 'flex-1 overflow-y-auto p-4 min-h-0' : 'flex-1 overflow-y-auto p-4'">
       <div class="space-y-4">
         <div v-if="cartItems.length === 0" class="text-gray-500 text-center py-8">
           <div class="text-4xl mb-2">🛒</div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed top-4 right-4 z-50">
+  <div class="relative inline-block">
     <div class="relative inline-block">
       <!-- Current Language Button -->
       <button 

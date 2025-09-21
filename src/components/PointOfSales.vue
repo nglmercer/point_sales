@@ -1,11 +1,7 @@
 <template>
-  <div class="h-screen">
+  <div class="max-h-dvh">
     <!-- Notification Component -->
     <NotificationComponent />
-
-    <!-- Language Switcher Component -->
-    <LanguageSwitcher />
-
     <!-- Ticket Viewer (when accessed via QR code) -->
     <div v-if="showTicketViewer" class="fixed inset-0 bg-white z-50 overflow-y-auto">
       <div class="max-w-md mx-auto p-4">
