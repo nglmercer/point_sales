@@ -1,80 +1,17 @@
 <template>
   <div class="h-screen">
-    <!-- Language Switcher -->
-    <div class="fixed top-4 right-4 z-50">
-      <div class="relative inline-block">
-        <!-- Current Language Button -->
-        <button 
-          @click="toggleLanguageDropdown"
-          class="flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 shadow-md transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-        >
-          <span class="text-xl">{{ currentLanguage === 'es' ? '🇪🇸' : '🇺🇸' }}</span>
-          <span class="font-medium text-gray-700">{{ currentLanguage === 'es' ? 'ES' : 'EN' }}</span>
-          <svg 
-            class="w-4 h-4 text-gray-500 transition-transform duration-200" 
-            :class="{ 'rotate-180': showLanguageDropdown }"
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-          </svg>
-        </button>
+    <!-- Notification Component -->
+    <NotificationComponent />
 
-        <!-- Dropdown Menu -->
-        <div 
-          v-show="showLanguageDropdown"
-          class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-10"
-        >
-          <button
-            @click="selectLanguage('es')"
-            class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-blue-50 transition-colors duration-150"
-            :class="{ 'bg-blue-50 border-r-2 border-blue-500': currentLanguage === 'es' }"
-          >
-            <span class="text-xl">🇪🇸</span>
-            <div>
-              <div class="font-medium text-gray-900">Español</div>
-              <div class="text-sm text-gray-500">Spanish</div>
-            </div>
-            <svg 
-              v-if="currentLanguage === 'es'" 
-              class="w-5 h-5 text-blue-500 ml-auto" 
-              fill="currentColor" 
-              viewBox="0 0 20 20"
-            >
-              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-            </svg>
-          </button>
-          
-          <button
-            @click="selectLanguage('en')"
-            class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-blue-50 transition-colors duration-150"
-            :class="{ 'bg-blue-50 border-r-2 border-blue-500': currentLanguage === 'en' }"
-          >
-            <span class="text-xl">🇺🇸</span>
-            <div>
-              <div class="font-medium text-gray-900">English</div>
-              <div class="text-sm text-gray-500">Inglés</div>
-            </div>
-            <svg 
-              v-if="currentLanguage === 'en'" 
-              class="w-5 h-5 text-blue-500 ml-auto" 
-              fill="currentColor" 
-              viewBox="0 0 20 20"
-            >
-              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-            </svg>
-          </button>
-        </div>
-      </div>
+    <!-- Language Switcher Component -->
+    <LanguageSwitcher />
 
-      <!-- Overlay to close dropdown when clicking outside -->
-      <div 
-        v-if="showLanguageDropdown"
-        @click="showLanguageDropdown = false"
-        class="fixed inset-0 z-0"
-      ></div>
-    </div>
+    <!-- Ticket Options Modal -->
+    <TicketOptionsModal 
+      :show="showTicketModal"
+      :ticket-data="currentTicketData"
+      @close="closeTicketModal"
+    />
 
     <!-- Desktop Layout -->
     <DesktopLayout
@@ -121,7 +58,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { changeLanguage, getCurrentLanguage } from '../utils/i18n.js'
 import NavigationContainer from './NavigationContainer.vue'
@@ -130,6 +67,10 @@ import OrderSummary from './OrderSummary.vue'
 import TicketForm from './TicketForm.vue'
 import DesktopLayout from './DesktopLayout.vue'
 import MobileLayout from './MobileLayout.vue'
+import NotificationComponent from './NotificationComponent.vue'
+import LanguageSwitcher from './LanguageSwitcher.vue'
+import TicketOptionsModal from './TicketOptionsModal.vue'
+import { emitter } from '../utils/Emitter'
 
 // i18n setup
 const { t } = useI18n()
@@ -177,6 +118,10 @@ const currentMobileView = ref('menu') // 'menu', 'cart', 'ticket'
 const showTicketForm = ref(false) // For desktop ticket view
 const currentLanguage = ref(getCurrentLanguage())
 const showLanguageDropdown = ref(false)
+const showTicketModal = ref(false)
+const currentTicketData = ref(null)
+
+
 
 // Computed properties
 const currentProducts = computed(() => {
@@ -273,9 +218,14 @@ const processPayment = () => {
   }
 }
 
+
+
 const handleTicketGenerated = (ticketData) => {
   // Handle successful ticket generation
   console.log('Ticket generated:', ticketData)
+  
+  // Store ticket data for the modal
+  currentTicketData.value = ticketData
   
   // Clear cart after ticket generation
   clearCart()
@@ -288,33 +238,14 @@ const handleTicketGenerated = (ticketData) => {
     handleMobileTabClick('menu')
   }
   
-  // Show success message
-  alert(t('messages.ticketGenerated'))
+  // Show the ticket options modal
+  showTicketModal.value = true
 }
 
-// Language switching
-const switchLanguage = (locale) => {
-  changeLanguage(locale)
-  currentLanguage.value = locale
+const closeTicketModal = () => {
+  showTicketModal.value = false
+  currentTicketData.value = null
 }
-
-const toggleLanguageDropdown = () => {
-  showLanguageDropdown.value = !showLanguageDropdown.value
-}
-
-const selectLanguage = (locale) => {
-  changeLanguage(locale)
-  currentLanguage.value = locale
-  showLanguageDropdown.value = false
-}
-
-// Mobile-specific methods
-const selectCategoryAndShowProducts = (categoryId) => {
-  currentCategory.value = categoryId
-  currentMobileView.value = 'products'
-  searchQuery.value = '' // Clear search when changing category
-}
-
 const getCurrentCategoryName = () => {
   const category = categories.value.find(cat => cat.id === currentCategory.value)
   return category ? category.name : t('navigation.menu')
@@ -355,4 +286,7 @@ const handleMobileTabClick = (tabName) => {
       currentMobileView.value = tabName
   }
 }
+
+
+
 </script>

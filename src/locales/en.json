@@ -116,5 +116,26 @@
   "language": {
     "spanish": "Español",
     "english": "English"
+  },
+  "ticketModal": {
+    "ticketGenerated": "Ticket Generated!",
+    "successTitle": "Order Completed Successfully!",
+    "successMessage": "Your ticket has been generated. Choose what you'd like to do next:",
+    "ticketNumber": "Ticket #",
+    "total": "Total",
+    "date": "Date",
+    "time": "Time",
+    "qrCodeTitle": "QR Code",
+    "qrCodeDescription": "Scan this code to access your ticket digitally",
+    "chooseAction": "Choose an action:",
+    "viewFullTicket": "View Full Ticket",
+    "printTicket": "Print Ticket",
+    "downloadPDF": "Download PDF",
+    "downloadText": "Download Text File",
+    "emailTicket": "Email Ticket",
+    "continueShopping": "Continue Shopping",
+    "printSuccess": "Ticket sent to printer",
+    "downloadSuccess": "File downloaded successfully",
+    "downloadError": "Error downloading file"
   }
 }

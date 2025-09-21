@@ -118,5 +118,26 @@
   "language": {
     "spanish": "Español",
     "english": "English"
+  },
+  "ticketModal": {
+    "ticketGenerated": "¡Ticket Generado!",
+    "successTitle": "¡Pedido Completado Exitosamente!",
+    "successMessage": "Tu ticket ha sido generado. Elige qué te gustaría hacer a continuación:",
+    "ticketNumber": "Ticket #",
+    "total": "Total",
+    "date": "Fecha",
+    "time": "Hora",
+    "qrCodeTitle": "Código QR",
+    "qrCodeDescription": "Escanea este código para acceder a tu ticket digitalmente",
+    "chooseAction": "Elige una acción:",
+    "viewFullTicket": "Ver Ticket Completo",
+    "printTicket": "Imprimir Ticket",
+    "downloadPDF": "Descargar PDF",
+    "downloadText": "Descargar Archivo de Texto",
+    "emailTicket": "Enviar por Email",
+    "continueShopping": "Continuar Comprando",
+    "printSuccess": "Ticket enviado a la impresora",
+    "downloadSuccess": "Archivo descargado exitosamente",
+    "downloadError": "Error al descargar el archivo"
   }
 }

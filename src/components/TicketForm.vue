@@ -327,7 +327,8 @@ const generateTicket = async () => {
     cartItems: props.cartItems,
     total: total.value,
     date: ticketDate.value,
-    time: ticketTime.value
+    time: ticketTime.value,
+    qrCodeDataURL: qrCodeDataURL.value
   })
   
   // Show the ticket
