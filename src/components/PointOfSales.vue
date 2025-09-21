@@ -1,5 +1,27 @@
 <template>
   <div class="h-screen">
+    <!-- Language Switcher -->
+    <div class="fixed top-4 right-4 z-50">
+      <div class="dropdown dropdown-end">
+        <div tabindex="0" role="button" class="btn btn-sm btn-outline">
+          <span class="material-icons text-sm">language</span>
+          {{ currentLanguage === 'es' ? t('language.spanish') : t('language.english') }}
+        </div>
+        <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+          <li>
+            <a @click="switchLanguage('es')" :class="{ 'active': currentLanguage === 'es' }">
+              🇪🇸 {{ t('language.spanish') }}
+            </a>
+          </li>
+          <li>
+            <a @click="switchLanguage('en')" :class="{ 'active': currentLanguage === 'en' }">
+              🇺🇸 {{ t('language.english') }}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
     <!-- Desktop Layout -->
     <DesktopLayout
       :category-nav-items="categoryNavItems"
@@ -8,6 +30,7 @@
       :category-name="getCurrentCategoryName()"
       :cart-items="cart"
       :show-ticket-form="showTicketForm"
+      :t="t"
       @category-nav-click="handleCategoryNavClick"
       @search="handleSearch"
       @add-to-cart="addToCart"
@@ -29,6 +52,7 @@
       :category-name="getCurrentCategoryName()"
       :cart-items="cart"
       :category-nav-items="categoryNavItems"
+      :t="t"
       @tab-click="handleMobileTabClick"
       @search="handleSearch"
       @add-to-cart="addToCart"
@@ -44,12 +68,17 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { changeLanguage, getCurrentLanguage } from '../utils/i18n.js'
 import NavigationContainer from './NavigationContainer.vue'
 import ProductCard from './ProductCard.vue'
 import OrderSummary from './OrderSummary.vue'
 import TicketForm from './TicketForm.vue'
 import DesktopLayout from './DesktopLayout.vue'
 import MobileLayout from './MobileLayout.vue'
+
+// i18n setup
+const { t } = useI18n()
 
 // Food data with proper image URLs and fallbacks
 const foodData = {
@@ -77,14 +106,14 @@ const foodData = {
   ]
 }
 
-// Categories configuration
-const categories = [
-  { id: 'meals', name: 'Meals', icon: 'restaurant' },
-  { id: 'burgers', name: 'Burgers', icon: 'lunch_dining' },
-  { id: 'sandwiches', name: 'Sandwiches', icon: 'fastfood' },
-  { id: 'sides', name: 'Sides', icon: 'fastfood' },
-  { id: 'drinks', name: 'Drinks', icon: 'local_drink' }
-]
+// Categories configuration with i18n
+const categories = computed(() => [
+  { id: 'meals', name: t('categories.meals'), icon: 'restaurant' },
+  { id: 'burgers', name: t('categories.burgers'), icon: 'lunch_dining' },
+  { id: 'sandwiches', name: t('categories.sandwiches'), icon: 'fastfood' },
+  { id: 'sides', name: t('categories.sides'), icon: 'fastfood' },
+  { id: 'drinks', name: t('categories.drinks'), icon: 'local_drink' }
+])
 
 // Reactive state
 const currentCategory = ref('burgers')
@@ -92,6 +121,7 @@ const cart = ref([])
 const searchQuery = ref('')
 const currentMobileView = ref('menu') // 'menu', 'cart', 'ticket'
 const showTicketForm = ref(false) // For desktop ticket view
+const currentLanguage = ref(getCurrentLanguage())
 
 // Computed properties
 const currentProducts = computed(() => {
@@ -105,6 +135,7 @@ const filteredProducts = computed(() => {
   
   const query = searchQuery.value.toLowerCase()
   return currentProducts.value.filter(product => 
+    t(`products.${product.name}`).toLowerCase().includes(query) ||
     product.name.toLowerCase().includes(query)
   )
 })
@@ -115,7 +146,7 @@ const cartItemCount = computed(() => {
 
 // Category navigation items for SidebarNav
 const categoryNavItems = computed(() => {
-  return categories.map(category => ({
+  return categories.value.map(category => ({
     id: category.id,
     icon: category.icon,
     label: category.name,
@@ -174,7 +205,7 @@ const clearCart = () => {
 
 const processPayment = () => {
   if (cart.value.length === 0) {
-    alert('Cart is empty!')
+    alert(t('messages.cartEmpty'))
     return
   }
   
@@ -203,7 +234,13 @@ const handleTicketGenerated = (ticketData) => {
   }
   
   // Show success message
-  alert('Ticket generated successfully!')
+  alert(t('messages.ticketGenerated'))
+}
+
+// Language switching
+const switchLanguage = (locale) => {
+  changeLanguage(locale)
+  currentLanguage.value = locale
 }
 
 // Mobile-specific methods
@@ -214,8 +251,8 @@ const selectCategoryAndShowProducts = (categoryId) => {
 }
 
 const getCurrentCategoryName = () => {
-  const category = categories.find(cat => cat.id === currentCategory.value)
-  return category ? category.name : 'Products'
+  const category = categories.value.find(cat => cat.id === currentCategory.value)
+  return category ? category.name : t('navigation.menu')
 }
 
 const handleMobileTabClick = (tabName) => {

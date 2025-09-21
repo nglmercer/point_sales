@@ -1,0 +1,57 @@
+{
+  "categories": {
+    "meals": "Meals",
+    "burgers": "Burgers",
+    "sandwiches": "Sandwiches",
+    "sides": "Sides",
+    "drinks": "Drinks"
+  },
+  "products": {
+    "Quarter Pounder With Cheese": "Quarter Pounder With Cheese",
+    "Double Quarter Pounder With Cheese": "Double Quarter Pounder With Cheese",
+    "Quarter Pounder With Cheese Deluxe": "Quarter Pounder With Cheese Deluxe",
+    "Big Mac": "Big Mac",
+    "McDouble": "McDouble",
+    "Quarter Pounder With Cheese Bacon": "Quarter Pounder With Cheese Bacon",
+    "Chicken Sandwich": "Chicken Sandwich",
+    "Fish Sandwich": "Fish Sandwich",
+    "Large Fries": "Large Fries",
+    "Medium Fries": "Medium Fries",
+    "Small Fries": "Small Fries",
+    "Medium Soda": "Medium Soda",
+    "Large Soda": "Large Soda",
+    "M&Ms McFlurry": "M&Ms McFlurry"
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Cart is empty",
+    "total": "Total",
+    "clear": "Clear Cart",
+    "checkout": "Process Payment",
+    "quantity": "Quantity",
+    "remove": "Remove",
+    "addToCart": "Add to Cart"
+  },
+  "search": {
+    "placeholder": "Search products...",
+    "noResults": "No products found"
+  },
+  "ticket": {
+    "title": "Generate Ticket",
+    "generated": "Ticket generated successfully!",
+    "backToCart": "Back to Cart"
+  },
+  "navigation": {
+    "menu": "Menu",
+    "cart": "Cart",
+    "ticket": "Ticket"
+  },
+  "messages": {
+    "cartEmpty": "Cart is empty!",
+    "ticketGenerated": "Ticket generated successfully!"
+  },
+  "language": {
+    "spanish": "Español",
+    "english": "English"
+  }
+}

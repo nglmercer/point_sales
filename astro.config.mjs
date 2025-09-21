@@ -7,7 +7,10 @@ import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [vue({ devtools: true })],
+  integrations: [vue({ 
+    devtools: true,
+    appEntrypoint: '/src/utils/vue-app.js'
+  })],
 
   vite: {
     plugins: [tailwindcss()]

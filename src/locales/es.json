@@ -1,0 +1,57 @@
+{
+  "categories": {
+    "meals": "Comidas",
+    "burgers": "Hamburguesas",
+    "sandwiches": "Sándwiches",
+    "sides": "Acompañamientos",
+    "drinks": "Bebidas"
+  },
+  "products": {
+    "Quarter Pounder With Cheese": "Cuarto de Libra con Queso",
+    "Double Quarter Pounder With Cheese": "Doble Cuarto de Libra con Queso",
+    "Quarter Pounder With Cheese Deluxe": "Cuarto de Libra con Queso Deluxe",
+    "Big Mac": "Big Mac",
+    "McDouble": "McDoble",
+    "Quarter Pounder With Cheese Bacon": "Cuarto de Libra con Queso y Tocino",
+    "Chicken Sandwich": "Sándwich de Pollo",
+    "Fish Sandwich": "Sándwich de Pescado",
+    "Large Fries": "Papas Fritas Grandes",
+    "Medium Fries": "Papas Fritas Medianas",
+    "Small Fries": "Papas Fritas Pequeñas",
+    "Medium Soda": "Refresco Mediano",
+    "Large Soda": "Refresco Grande",
+    "M&Ms McFlurry": "McFlurry de M&Ms"
+  },
+  "cart": {
+    "title": "Carrito",
+    "empty": "El carrito está vacío",
+    "total": "Total",
+    "clear": "Limpiar Carrito",
+    "checkout": "Procesar Pago",
+    "quantity": "Cantidad",
+    "remove": "Eliminar",
+    "addToCart": "Agregar al Carrito"
+  },
+  "search": {
+    "placeholder": "Buscar productos...",
+    "noResults": "No se encontraron productos"
+  },
+  "ticket": {
+    "title": "Generar Ticket",
+    "generated": "¡Ticket generado exitosamente!",
+    "backToCart": "Volver al Carrito"
+  },
+  "navigation": {
+    "menu": "Menú",
+    "cart": "Carrito",
+    "ticket": "Ticket"
+  },
+  "messages": {
+    "cartEmpty": "¡El carrito está vacío!",
+    "ticketGenerated": "¡Ticket generado exitosamente!"
+  },
+  "language": {
+    "spanish": "Español",
+    "english": "English"
+  }
+}
