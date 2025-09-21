@@ -312,6 +312,27 @@ const ticketTime = ref('')
 const qrCodeDataURL = ref('')
 const ticketRef = ref(null)
 
+// Reset form function
+const resetForm = () => {
+  showTicket.value = false
+  customerData.value = {
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    orderType: ''
+  }
+  ticketNumber.value = ''
+  ticketDate.value = ''
+  ticketTime.value = ''
+  qrCodeDataURL.value = ''
+}
+
+// Expose reset function to parent
+defineExpose({
+  resetForm
+})
+
 // Computed properties
 const total = computed(() => {
   return props.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)

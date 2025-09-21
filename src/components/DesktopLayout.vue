@@ -67,26 +67,15 @@
           </div>
         </div>
 
-        <!-- Order Summary / Ticket Form Sidebar -->
+        <!-- Order Summary Sidebar -->
         <div class="w-80 border-l bg-gray-50">
-          <div v-if="!showTicketForm">
-            <OrderSummary 
-              :cart-items="cartItems"
-              @update-quantity="(productId, quantity) => emit('update-quantity', productId, quantity)"
-              @remove-item="(productId) => emit('remove-item', productId)"
-              @clear-cart="() => emit('clear-cart')"
-              @process-payment="() => emit('process-payment')"
-              @show-ticket-form="() => emit('show-ticket-form')"
-            />
-          </div>
-          <div v-else>
-            <TicketForm 
-              :cart-items="cartItems"
-              :mobile="false"
-              @ticket-generated="(event) => emit('ticket-generated', event)"
-              @back-to-cart="() => emit('back-to-cart')"
-            />
-          </div>
+          <OrderSummary 
+            :cart-items="cartItems"
+            @update-quantity="(productId, quantity) => emit('update-quantity', productId, quantity)"
+            @remove-item="(productId) => emit('remove-item', productId)"
+            @clear-cart="() => emit('clear-cart')"
+            @process-payment="() => emit('process-payment')"
+          />
         </div>
       </div>
     </div>
@@ -98,7 +87,6 @@ import NavigationContainer from './NavigationContainer.vue'
 import SearchBar from './SearchBar.vue'
 import ProductGrid from './ProductGrid.vue'
 import OrderSummary from './OrderSummary.vue'
-import TicketForm from './TicketForm.vue'
 
 defineProps({
   categoryNavItems: {
@@ -120,10 +108,6 @@ defineProps({
   cartItems: {
     type: Array,
     required: true
-  },
-  showTicketForm: {
-    type: Boolean,
-    default: false
   }
 })
 
@@ -134,9 +118,6 @@ const emit = defineEmits([
   'update-quantity',
   'remove-item',
   'clear-cart',
-  'process-payment',
-  'show-ticket-form',
-  'ticket-generated',
-  'back-to-cart'
+  'process-payment'
 ])
 </script>

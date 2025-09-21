@@ -80,14 +80,39 @@
       @continue-shopping="handleContinueShopping"
     />
 
+    <!-- Mobile Ticket Form (Full Screen) -->
+    <div v-if="showMobileTicketForm" class="fixed inset-0 bg-white z-40 md:hidden">
+      <TicketForm
+        :cart-items="cart"
+        :mobile="true"
+        @ticket-generated="handleTicketGenerated"
+        @back-to-cart="closeMobileTicketForm"
+        ref="mobileTicketFormRef"
+      />
+    </div>
+
+    <!-- Desktop Ticket Form (Modal) -->
+    <div v-if="showDesktopTicketForm" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:flex items-center justify-center">
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-hidden">
+        <TicketForm
+          :cart-items="cart"
+          :mobile="false"
+          @ticket-generated="handleTicketGenerated"
+          @back-to-cart="closeDesktopTicketForm"
+          ref="desktopTicketFormRef"
+        />
+      </div>
+    </div>
+
     <!-- Desktop Layout -->
     <DesktopLayout
+      v-if="!showMobileTicketForm && !showDesktopTicketForm"
       :category-nav-items="categoryNavItems"
       :search-query="searchQuery"
       :filtered-products="filteredProducts"
       :category-name="getCurrentCategoryName()"
       :cart-items="cart"
-      :show-ticket-form="showTicketForm"
+      :show-ticket-form="false"
       :t="t"
       @category-nav-click="handleCategoryNavClick"
       @search="handleSearch"
@@ -96,13 +121,14 @@
       @remove-item="removeFromCart"
       @clear-cart="clearCart"
       @process-payment="processPayment"
-      @show-ticket-form="showTicketForm = true"
+      @show-ticket-form="() => {}"
       @ticket-generated="handleTicketGenerated"
-      @back-to-cart="showTicketForm = false"
+      @back-to-cart="() => {}"
     />
 
     <!-- Mobile Layout -->
     <MobileLayout
+      v-if="!showMobileTicketForm && !showDesktopTicketForm"
       :current-mobile-view="currentMobileView"
       :cart-item-count="cartItemCount"
       :search-query="searchQuery"
@@ -181,13 +207,16 @@ const categories = computed(() => [
 const currentCategory = ref('burgers')
 const cart = ref([])
 const searchQuery = ref('')
-const currentMobileView = ref('menu') // 'menu', 'cart', 'ticket'
-const showTicketForm = ref(false) // For desktop ticket view
+const currentMobileView = ref('menu') // 'menu', 'cart'
+const showMobileTicketForm = ref(false) // For mobile full-screen ticket form
+const showDesktopTicketForm = ref(false) // For desktop modal ticket form
 const currentLanguage = ref(getCurrentLanguage())
 const showLanguageDropdown = ref(false)
 const showTicketModal = ref(false)
 const currentTicketData = ref(null)
 const showTicketViewer = ref(false)
+const mobileTicketFormRef = ref(null)
+const desktopTicketFormRef = ref(null)
 const urlTicketData = ref({
   ticket: '',
   date: '',
@@ -286,11 +315,33 @@ const processPayment = () => {
   
   // Navigate to ticket generation
   if (window.innerWidth >= 768) { // Desktop
-    showTicketForm.value = true
+    // En desktop, ahora mostramos el modal del formulario primero
+    showDesktopTicketForm.value = true
+    // Reset form data when opening
+    if (desktopTicketFormRef.value) {
+      desktopTicketFormRef.value.resetForm()
+    }
   } else { // Mobile
-    // For mobile, switch to ticket view
-    handleMobileTabClick('ticket')
+    // For mobile, show full-screen ticket form
+    showMobileTicketForm.value = true
+    // Reset form data when opening
+    if (mobileTicketFormRef.value) {
+      mobileTicketFormRef.value.resetForm()
+    }
   }
+}
+
+
+const closeMobileTicketForm = () => {
+  showMobileTicketForm.value = false
+  // Reset form when closing
+  if (mobileTicketFormRef.value) {
+    mobileTicketFormRef.value.resetForm()
+  }
+}
+
+const closeDesktopTicketForm = () => {
+  showDesktopTicketForm.value = false
 }
 
 
@@ -302,15 +353,22 @@ const handleTicketGenerated = (ticketData) => {
   // Store ticket data for the modal FIRST
   currentTicketData.value = {
     ...ticketData,
-    cartItems: [...cart.value], // Preserve cart items for the modal
+    cartItems: ticketData.cartItems || [...cart.value], // Use provided cart items or current cart
     customerData: ticketData.customerData
   }
   
   // Show the ticket options modal BEFORE clearing data
   showTicketModal.value = true
   
-  // Reset views
-  showTicketForm.value = false
+  // Close mobile ticket form if open
+  if (showMobileTicketForm.value) {
+    showMobileTicketForm.value = false
+  }
+  
+  // Close desktop ticket form if open
+  if (showDesktopTicketForm.value) {
+    showDesktopTicketForm.value = false
+  }
   
   // Navigate back to menu on mobile but keep the modal open
   if (window.innerWidth < 768) {
@@ -363,17 +421,6 @@ const handleMobileTabClick = (tabName) => {
       
     case 'cart':
       currentMobileView.value = 'cart'
-      break
-      
-    case 'ticket':
-      // Only allow ticket view if there are items in cart
-      if (cart.value.length === 0) {
-        // Show a brief message and redirect to cart
-        currentMobileView.value = 'cart'
-        // You could add a toast notification here
-        return
-      }
-      currentMobileView.value = 'ticket'
       break
       
     default:
