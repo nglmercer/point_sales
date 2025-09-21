@@ -4,16 +4,8 @@
     <div :class="mobile ? 'p-4 border-b bg-blue-600 text-white' : 'p-6 border-b'">
       <div class="flex items-center justify-between">
         <h2 :class="mobile ? 'text-lg font-semibold' : 'text-xl font-semibold text-gray-800'">
-          {{ showTicket ? 'Your Receipt' : 'Customer Information' }}
+          {{ showTicket ? t('ticketForm.yourReceipt') : t('ticketForm.customerInfo') }}
         </h2>
-        <button 
-          @click="mobile ? $emit('close') : $emit('back-to-cart')"
-          :class="mobile ? 'text-white hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
       </div>
     </div>
 
@@ -25,84 +17,84 @@
           <!-- Name -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Full Name *
+              {{ t('ticketForm.fullNameRequired') }}
             </label>
             <input
               v-model="customerData.name"
               type="text"
               required
               :class="mobile ? 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm' : 'w-full px-3 py-2 border border-gray-300 rounded-md'"
-              placeholder="Enter your full name"
+              :placeholder="t('ticketForm.placeholders.fullName')"
             />
           </div>
 
           <!-- Email -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Email Address *
+              {{ t('ticketForm.emailRequired') }}
             </label>
             <input
               v-model="customerData.email"
               type="email"
               required
               :class="mobile ? 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm' : 'w-full px-3 py-2 border border-gray-300 rounded-md'"
-              placeholder="Enter your email"
+              :placeholder="t('ticketForm.placeholders.email')"
             />
           </div>
 
           <!-- Phone -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Phone Number
+              {{ t('ticketForm.phoneNumber') }}
             </label>
             <input
               v-model="customerData.phone"
               type="tel"
               :class="mobile ? 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm' : 'w-full px-3 py-2 border border-gray-300 rounded-md'"
-              placeholder="Enter your phone number"
+              :placeholder="t('ticketForm.placeholders.phone')"
             />
           </div>
 
           <!-- Address -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Address
+              {{ t('ticketForm.address') }}
             </label>
             <textarea
               v-model="customerData.address"
               rows="2"
               :class="mobile ? 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm' : 'w-full px-3 py-2 border border-gray-300 rounded-md'"
-              placeholder="Enter your address (optional)"
+              :placeholder="t('ticketForm.placeholders.address')"
             ></textarea>
           </div>
 
           <!-- Order Type -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Order Type *
+              {{ t('ticketForm.orderTypeRequired') }}
             </label>
             <select
               v-model="customerData.orderType"
               required
               :class="mobile ? 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm' : 'w-full px-3 py-2 border border-gray-300 rounded-md'"
             >
-              <option value="">Select order type</option>
-              <option value="dine-in">Dine In</option>
-              <option value="takeout">Takeout</option>
-              <option value="delivery">Delivery</option>
+              <option value="">{{ t('ticketForm.selectOrderType') }}</option>
+              <option value="dine-in">{{ t('ticketForm.dineIn') }}</option>
+              <option value="takeout">{{ t('ticketForm.takeout') }}</option>
+              <option value="delivery">{{ t('ticketForm.delivery') }}</option>
             </select>
           </div>
 
           <!-- Order Summary -->
           <div class="border-t pt-4">
-            <h3 class="font-medium text-gray-800 mb-2">Order Summary</h3>
+            <h3 class="font-medium text-gray-800 mb-2">{{ t('ticketForm.orderSummary') }}</h3>
             <div class="space-y-1 text-sm">
               <div v-for="item in cartItems" :key="item.id" class="flex justify-between">
                 <span>{{ item.name }} x{{ item.quantity }}</span>
                 <span>${{ (item.price * item.quantity).toFixed(2) }}</span>
               </div>
               <div class="border-t pt-1 font-semibold flex justify-between">
-                <span>Total:</span>
+                <span>{{ t('ticketForm.total') }}</span>
                 <span>${{ total.toFixed(2) }}</span>
               </div>
             </div>
@@ -113,55 +105,55 @@
             type="submit"
             :class="mobile ? 'w-full bg-blue-600 text-white py-3 px-4 rounded-md font-medium hover:bg-blue-700 transition-colors' : 'w-full bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 transition-colors'"
           >
-            Generate Ticket & Process Payment
+            {{ t('ticketForm.generateTicketButton') }}
           </button>
         </form>
       </div>
 
       <!-- Generated Ticket -->
       <div v-else :class="mobile ? 'p-4' : 'p-6'">
-        <div class="bg-white border-2 border-dashed border-gray-300 p-4 rounded-lg">
+        <div ref="ticketRef" class="bg-white border-2 border-dashed border-gray-300 p-4 rounded-lg">
           <!-- Restaurant Header -->
           <div class="text-center border-b pb-4 mb-4">
             <div class="text-yellow-500 text-4xl font-bold mb-2">M</div>
             <h1 class="text-xl font-bold">McDonald's</h1>
-            <p class="text-sm text-gray-600">Thank you for your order!</p>
+            <p class="text-sm text-gray-600">{{ t('ticketForm.thankYou') }}</p>
           </div>
 
           <!-- Ticket Info -->
           <div class="space-y-2 text-sm">
             <div class="flex justify-between">
-              <span class="font-medium">Ticket #:</span>
+              <span class="font-medium">{{ t('ticketForm.ticketNumber') }}</span>
               <span>{{ ticketNumber }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="font-medium">Date:</span>
+              <span class="font-medium">{{ t('ticketForm.date') }}</span>
               <span>{{ ticketDate }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="font-medium">Time:</span>
+              <span class="font-medium">{{ t('ticketForm.time') }}</span>
               <span>{{ ticketTime }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="font-medium">Order Type:</span>
-              <span class="capitalize">{{ customerData.orderType.replace('-', ' ') }}</span>
+              <span class="font-medium">{{ t('ticketForm.orderType') }}:</span>
+              <span class="capitalize">{{ getOrderTypeTranslation(customerData.orderType) }}</span>
             </div>
           </div>
 
           <!-- Customer Info -->
           <div class="border-t border-b py-4 my-4">
-            <h3 class="font-medium mb-2">Customer Information</h3>
+            <h3 class="font-medium mb-2">{{ t('ticketForm.customerInformation') }}</h3>
             <div class="space-y-1 text-sm">
-              <div><span class="font-medium">Name:</span> {{ customerData.name }}</div>
-              <div><span class="font-medium">Email:</span> {{ customerData.email }}</div>
-              <div v-if="customerData.phone"><span class="font-medium">Phone:</span> {{ customerData.phone }}</div>
-              <div v-if="customerData.address"><span class="font-medium">Address:</span> {{ customerData.address }}</div>
+              <div><span class="font-medium">{{ t('ticketForm.name') }}</span> {{ customerData.name }}</div>
+              <div><span class="font-medium">{{ t('ticketForm.email') }}</span> {{ customerData.email }}</div>
+              <div v-if="customerData.phone"><span class="font-medium">{{ t('ticketForm.phone') }}</span> {{ customerData.phone }}</div>
+              <div v-if="customerData.address"><span class="font-medium">{{ t('ticketForm.address') }}:</span> {{ customerData.address }}</div>
             </div>
           </div>
 
           <!-- Order Items -->
           <div class="space-y-2">
-            <h3 class="font-medium">Order Details</h3>
+            <h3 class="font-medium">{{ t('ticketForm.orderDetails') }}</h3>
             <div v-for="item in cartItems" :key="item.id" class="flex justify-between text-sm">
               <div>
                 <span>{{ item.name }}</span>
@@ -172,15 +164,21 @@
             
             <!-- Total -->
             <div class="border-t pt-2 font-semibold flex justify-between">
-              <span>Total Amount:</span>
+              <span>{{ t('ticketForm.totalAmount') }}</span>
               <span>${{ total.toFixed(2) }}</span>
             </div>
           </div>
 
+          <!-- QR Code Section -->
+          <div v-if="qrCodeDataURL" class="text-center mt-4 pt-4 border-t border-dashed border-gray-400">
+            <p class="text-sm mb-2">{{ t('ticketForm.qrCode') }}:</p>
+            <img :src="qrCodeDataURL" alt="QR Code" class="mx-auto" style="width: 150px; height: 150px;">
+          </div>
+
           <!-- Footer -->
           <div class="text-center text-xs text-gray-500 mt-4 pt-4 border-t">
-            <p>Thank you for choosing McDonald's!</p>
-            <p>Please keep this receipt for your records.</p>
+            <p>{{ t('ticketForm.thankYouFooter') }}</p>
+            <p>{{ t('ticketForm.keepReceipt') }}</p>
           </div>
         </div>
 
@@ -206,6 +204,49 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import QRCode from 'qrcode'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
+
+const { t } = useI18n()
+
+// Helper function to get order type translation
+const getOrderTypeTranslation = (orderType) => {
+  const translations = {
+    'dine-in': t('ticketForm.orderTypes.dineIn'),
+    'takeout': t('ticketForm.orderTypes.takeout'),
+    'delivery': t('ticketForm.orderTypes.delivery')
+  }
+  return translations[orderType] || orderType.replace('-', ' ')
+}
+
+// Generate QR Code with ticket data
+const generateQRCode = async () => {
+  const ticketData = {
+    ticketNumber: ticketNumber.value,
+    date: ticketDate.value,
+    time: ticketTime.value,
+    customer: customerData.value,
+    items: props.cartItems,
+    total: totalAmount.value,
+    restaurant: 'McDonald\'s'
+  }
+  
+  try {
+    const qrDataString = JSON.stringify(ticketData)
+    qrCodeDataURL.value = await QRCode.toDataURL(qrDataString, {
+      width: 200,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    })
+  } catch (error) {
+    console.error('Error generating QR code:', error)
+  }
+}
 
 const props = defineProps({
   cartItems: {
@@ -233,6 +274,8 @@ const customerData = ref({
 const ticketNumber = ref('')
 const ticketDate = ref('')
 const ticketTime = ref('')
+const qrCodeDataURL = ref('')
+const ticketRef = ref(null)
 
 // Computed properties
 const total = computed(() => {
@@ -240,12 +283,15 @@ const total = computed(() => {
 })
 
 // Methods
-const generateTicket = () => {
+const generateTicket = async () => {
   // Generate ticket number and timestamp
   ticketNumber.value = 'MCK' + Date.now().toString().slice(-6)
   const now = new Date()
   ticketDate.value = now.toLocaleDateString()
   ticketTime.value = now.toLocaleTimeString()
+  
+  // Generate QR code
+  await generateQRCode()
   
   // Emit ticket generated event with ticket data
   emit('ticket-generated', {
@@ -259,6 +305,205 @@ const generateTicket = () => {
   
   // Show the ticket
   showTicket.value = true
+}
+
+// Download ticket as PDF
+const downloadTicketPDF = async () => {
+  if (!ticketRef.value) return
+  
+  try {
+    const canvas = await html2canvas(ticketRef.value, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true
+    })
+    
+    const imgData = canvas.toDataURL('image/png')
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    
+    const imgWidth = 210
+    const pageHeight = 295
+    const imgHeight = (canvas.height * imgWidth) / canvas.width
+    let heightLeft = imgHeight
+    
+    let position = 0
+    
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+    heightLeft -= pageHeight
+    
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight
+      pdf.addPage()
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+      heightLeft -= pageHeight
+    }
+    
+    pdf.save(`ticket-${ticketNumber.value}.pdf`)
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+  }
+}
+
+// Print ticket directly
+const printTicket = () => {
+  if (!ticketRef.value) return
+  
+  const printWindow = window.open('', '_blank')
+  const ticketHTML = generateTicketHTML()
+  
+  printWindow.document.write(ticketHTML)
+  printWindow.document.close()
+  printWindow.focus()
+  printWindow.print()
+  printWindow.close()
+}
+
+// Generate complete HTML page for ticket
+const generateTicketHTML = () => {
+  const itemsHTML = props.cartItems.map(item => `
+    <tr>
+      <td>${item.name}</td>
+      <td>${item.quantity}</td>
+      <td>$${item.price.toFixed(2)}</td>
+      <td>$${(item.price * item.quantity).toFixed(2)}</td>
+    </tr>
+  `).join('')
+  
+  return `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Ticket ${ticketNumber.value}</title>
+      <style>
+        @media print {
+          body { margin: 0; }
+          .no-print { display: none; }
+        }
+        body {
+          font-family: 'Courier New', monospace;
+          max-width: 300px;
+          margin: 0 auto;
+          padding: 20px;
+          background: white;
+        }
+        .header {
+          text-align: center;
+          border-bottom: 2px dashed #333;
+          padding-bottom: 10px;
+          margin-bottom: 15px;
+        }
+        .logo {
+          font-size: 24px;
+          font-weight: bold;
+          color: #FFC72C;
+          margin-bottom: 5px;
+        }
+        .ticket-info {
+          margin-bottom: 15px;
+          font-size: 12px;
+        }
+        .customer-info {
+          margin-bottom: 15px;
+          border-bottom: 1px dashed #333;
+          padding-bottom: 10px;
+        }
+        .items-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 15px;
+        }
+        .items-table th,
+        .items-table td {
+          text-align: left;
+          padding: 5px 2px;
+          font-size: 12px;
+        }
+        .items-table th {
+          border-bottom: 1px solid #333;
+        }
+        .total-section {
+          border-top: 2px solid #333;
+          padding-top: 10px;
+          text-align: right;
+          font-weight: bold;
+          font-size: 16px;
+        }
+        .qr-section {
+          text-align: center;
+          margin-top: 15px;
+          border-top: 1px dashed #333;
+          padding-top: 15px;
+        }
+        .footer {
+          text-align: center;
+          margin-top: 15px;
+          font-size: 10px;
+          color: #666;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div class="logo">McDonald's</div>
+        <div>¡Gracias por su compra!</div>
+      </div>
+      
+      <div class="ticket-info">
+        <div><strong>Ticket:</strong> ${ticketNumber.value}</div>
+        <div><strong>Fecha:</strong> ${ticketDate.value}</div>
+        <div><strong>Hora:</strong> ${ticketTime.value}</div>
+        <div><strong>Tipo:</strong> ${getOrderTypeTranslation(customerData.value.orderType)}</div>
+      </div>
+      
+      <div class="customer-info">
+        <div><strong>Cliente:</strong> ${customerData.value.name}</div>
+        ${customerData.value.email ? `<div><strong>Email:</strong> ${customerData.value.email}</div>` : ''}
+        ${customerData.value.phone ? `<div><strong>Teléfono:</strong> ${customerData.value.phone}</div>` : ''}
+        ${customerData.value.address ? `<div><strong>Dirección:</strong> ${customerData.value.address}</div>` : ''}
+      </div>
+      
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cant.</th>
+            <th>Precio</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsHTML}
+        </tbody>
+      </table>
+      
+      <div class="total-section">
+        Total: $${total.value.toFixed(2)}
+      </div>
+      
+      ${qrCodeDataURL.value ? `
+        <div class="qr-section">
+          <div>Código QR del ticket:</div>
+          <img src="${qrCodeDataURL.value}" alt="QR Code" style="margin-top: 10px;">
+        </div>
+      ` : ''}
+      
+      <div class="footer">
+        <div>¡Esperamos verte pronto!</div>
+        <div>www.mcdonalds.com</div>
+      </div>
+    </body>
+    </html>
+  `
+}
+
+// Open ticket in new window/tab
+const openTicketPage = () => {
+  const ticketHTML = generateTicketHTML()
+  const newWindow = window.open('', '_blank')
+  newWindow.document.write(ticketHTML)
+  newWindow.document.close()
 }
 
 const downloadTicket = () => {
