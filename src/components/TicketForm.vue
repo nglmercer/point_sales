@@ -176,25 +176,52 @@
           </div>
 
           <!-- Footer -->
-          <div class="text-center text-xs text-gray-500 mt-4 pt-4 border-t">
-            <p>{{ t('ticketForm.thankYouFooter') }}</p>
-            <p>{{ t('ticketForm.keepReceipt') }}</p>
+          <div class="text-center mt-4 text-sm text-gray-600">
+            <p>{{ t('ticketForm.success') }}</p>
+            <p>www.mcdonalds.com</p>
           </div>
         </div>
 
         <!-- Action Buttons -->
-        <div :class="mobile ? 'mt-4 space-y-2' : 'mt-4 flex space-x-2'">
-          <button
-            @click="downloadTicket"
-            :class="mobile ? 'w-full bg-green-600 text-white py-2 px-4 rounded-md font-medium hover:bg-green-700 transition-colors' : 'flex-1 bg-green-600 text-white py-2 px-4 rounded-md font-medium hover:bg-green-700 transition-colors'"
+        <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+          <button 
+            @click="downloadTicketPDF"
+            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
           >
-            Download Receipt
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            {{ t('ticketForm.downloadPDF') }}
           </button>
-          <button
-            @click="emit('ticket-generated', { completed: true })"
-            :class="mobile ? 'w-full bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 transition-colors' : 'flex-1 bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 transition-colors'"
+          
+          <button 
+            @click="printTicket"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
           >
-            New Order
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+            </svg>
+            {{ t('ticketForm.print') }}
+          </button>
+          
+          <button 
+            @click="openTicketPage"
+            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+            </svg>
+            {{ t('ticketForm.openPage') }}
+          </button>
+          
+          <button 
+            @click="downloadTicket"
+            class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            {{ t('ticketForm.downloadText') }}
           </button>
         </div>
       </div>
@@ -229,7 +256,7 @@ const generateQRCode = async () => {
     time: ticketTime.value,
     customer: customerData.value,
     items: props.cartItems,
-    total: totalAmount.value,
+    total: total.value,
     restaurant: 'McDonald\'s'
   }
   
@@ -479,8 +506,8 @@ const generateTicketHTML = () => {
       </table>
       
       <div class="total-section">
-        Total: $${total.value.toFixed(2)}
-      </div>
+         Total: $${total.value.toFixed(2)}
+       </div>
       
       ${qrCodeDataURL.value ? `
         <div class="qr-section">
