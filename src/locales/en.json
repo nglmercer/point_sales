@@ -111,7 +111,10 @@
       "email": "Enter your email",
       "phone": "Enter your phone number",
       "address": "Enter your address (optional)"
-    }
+    },
+    "ticketViewer": "Ticket Viewer",
+    "customer": "Customer:",
+    "backToMenu": "Back to Menu"
   },
   "language": {
     "spanish": "Español",

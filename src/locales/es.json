@@ -113,7 +113,10 @@
       "email": "Ingresa tu correo electrónico",
       "phone": "Ingresa tu número de teléfono",
       "address": "Ingresa tu dirección (opcional)"
-    }
+    },
+    "ticketViewer": "Visor de Ticket",
+    "customer": "Cliente:",
+    "backToMenu": "Volver al Menú"
   },
   "language": {
     "spanish": "Español",

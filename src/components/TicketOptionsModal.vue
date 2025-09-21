@@ -1,8 +1,8 @@
 <template>
-  <div v-if="isVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+  <div v-if="isVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto mx-2 sm:mx-0">
       <!-- Header -->
-      <div class="p-6 border-b bg-green-600 text-white rounded-t-lg">
+      <div class="p-4 sm:p-6 border-b bg-green-600 text-white rounded-t-lg">
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-semibold flex items-center gap-2">
             <span class="material-symbols-outlined">check_circle</span>
@@ -18,7 +18,7 @@
       </div>
 
       <!-- Content -->
-      <div class="p-6">
+      <div class="p-4 sm:p-6">
         <!-- Success Message -->
         <div class="text-center mb-6">
           <div class="text-green-500 text-6xl mb-4">
@@ -37,19 +37,33 @@
           <div class="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span class="font-medium text-gray-700">{{ t('ticketModal.ticketNumber') }}:</span>
-              <div class="font-mono text-blue-600">{{ ticketData.ticketNumber }}</div>
+              <div class="font-mono text-blue-600">{{ ticketData.ticketNumber || 'N/A' }}</div>
             </div>
             <div>
               <span class="font-medium text-gray-700">{{ t('ticketModal.total') }}:</span>
-              <div class="font-semibold text-green-600">${{ ticketData.total.toFixed(2) }}</div>
+              <div class="font-semibold text-green-600">${{ (ticketData.total || 0).toFixed(2) }}</div>
             </div>
             <div>
               <span class="font-medium text-gray-700">{{ t('ticketModal.date') }}:</span>
-              <div>{{ ticketData.date }}</div>
+              <div>{{ ticketData.date || 'N/A' }}</div>
             </div>
             <div>
               <span class="font-medium text-gray-700">{{ t('ticketModal.time') }}:</span>
-              <div>{{ ticketData.time }}</div>
+              <div>{{ ticketData.time || 'N/A' }}</div>
+            </div>
+          </div>
+          
+          <!-- Customer Info if available -->
+          <div v-if="ticketData.customerData" class="mt-4 pt-4 border-t border-gray-200">
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span class="font-medium text-gray-700">{{ t('ticketModal.customer') }}:</span>
+                <div>{{ ticketData.customerData.name || 'N/A' }}</div>
+              </div>
+              <div v-if="ticketData.customerData.email">
+                <span class="font-medium text-gray-700">{{ t('ticketModal.email') }}:</span>
+                <div>{{ ticketData.customerData.email }}</div>
+              </div>
             </div>
           </div>
         </div>
@@ -57,8 +71,8 @@
         <!-- QR Code Section -->
         <div v-if="qrCodeDataURL" class="text-center mb-6 p-4 bg-blue-50 rounded-lg">
           <h4 class="font-medium text-gray-800 mb-3">{{ t('ticketModal.qrCodeTitle') }}</h4>
-          <div class="inline-block p-4 bg-white rounded-lg shadow-sm">
-            <img :src="qrCodeDataURL" alt="QR Code" class="mx-auto" style="width: 150px; height: 150px;">
+          <div class="inline-block p-3 sm:p-4 bg-white rounded-lg shadow-sm">
+            <img :src="qrCodeDataURL" alt="QR Code" class="mx-auto w-32 h-32 sm:w-36 sm:h-36">
           </div>
           <p class="text-sm text-gray-600 mt-2">{{ t('ticketModal.qrCodeDescription') }}</p>
         </div>
@@ -154,10 +168,15 @@ const emit = defineEmits(['close', 'view-ticket', 'continue-shopping'])
 // Reactive data
 const qrCodeDataURL = ref('')
 
-// Generate QR Code when ticket data changes
+// Use QR Code from ticket data or generate new one if not available
 watch(() => props.ticketData, async (newTicketData) => {
   if (newTicketData) {
-    await generateQRCode()
+    // Use existing QR code if available, otherwise generate new one
+    if (newTicketData.qrCodeDataURL) {
+      qrCodeDataURL.value = newTicketData.qrCodeDataURL
+    } else {
+      await generateQRCode()
+    }
   }
 }, { immediate: true })
 
@@ -166,8 +185,19 @@ const generateQRCode = async () => {
   if (!props.ticketData) return
   
   try {
-    const qrDataString = JSON.stringify(props.ticketData)
-    qrCodeDataURL.value = await QRCode.toDataURL(qrDataString, {
+    // Create optimized URL with essential ticket information
+    const baseUrl = window.location.origin + window.location.pathname
+    const ticketParams = new URLSearchParams({
+      ticket: props.ticketData.ticketNumber || '',
+      date: props.ticketData.date || '',
+      time: props.ticketData.time || '',
+      customer: props.ticketData.customer || '',
+      total: props.ticketData.total?.toString() || '0'
+    })
+    
+    const ticketUrl = `${baseUrl}?${ticketParams.toString()}`
+    
+    qrCodeDataURL.value = await QRCode.toDataURL(ticketUrl, {
       width: 200,
       margin: 2,
       color: {

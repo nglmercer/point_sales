@@ -248,21 +248,14 @@ const getOrderTypeTranslation = (orderType) => {
   return translations[orderType] || orderType.replace('-', ' ')
 }
 
-// Generate QR Code with ticket data
+// Generate QR Code with ticket URL
 const generateQRCode = async () => {
-  const ticketData = {
-    ticketNumber: ticketNumber.value,
-    date: ticketDate.value,
-    time: ticketTime.value,
-    customer: customerData.value,
-    items: props.cartItems,
-    total: total.value,
-    restaurant: 'McDonald\'s'
-  }
-  
   try {
-    const qrDataString = JSON.stringify(ticketData)
-    qrCodeDataURL.value = await QRCode.toDataURL(qrDataString, {
+    // Create a simple URL with essential ticket information
+    const baseUrl = window.location.origin + window.location.pathname
+    const ticketUrl = `${baseUrl}?ticket=${ticketNumber.value}&date=${encodeURIComponent(ticketDate.value)}&time=${encodeURIComponent(ticketTime.value)}&total=${total.value}&customer=${encodeURIComponent(customerData.value.name)}`
+    
+    qrCodeDataURL.value = await QRCode.toDataURL(ticketUrl, {
       width: 200,
       margin: 2,
       color: {
@@ -272,6 +265,21 @@ const generateQRCode = async () => {
     })
   } catch (error) {
     console.error('Error generating QR code:', error)
+    // Fallback: create an even simpler QR code with just the ticket number
+    try {
+      const fallbackUrl = `${window.location.origin}?ticket=${ticketNumber.value}`
+      qrCodeDataURL.value = await QRCode.toDataURL(fallbackUrl, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      })
+    } catch (fallbackError) {
+      console.error('Fallback QR code generation also failed:', fallbackError)
+      qrCodeDataURL.value = ''
+    }
   }
 }
 

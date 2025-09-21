@@ -6,11 +6,78 @@
     <!-- Language Switcher Component -->
     <LanguageSwitcher />
 
+    <!-- Ticket Viewer (when accessed via QR code) -->
+    <div v-if="showTicketViewer" class="fixed inset-0 bg-white z-50 overflow-y-auto">
+      <div class="max-w-md mx-auto p-4">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6 p-4 bg-blue-600 text-white rounded-lg">
+          <h1 class="text-xl font-bold">{{ t('ticketForm.ticketViewer') }}</h1>
+          <button @click="closeTicketViewer" class="text-white hover:text-gray-200">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Ticket Content -->
+        <div class="bg-white border-2 border-dashed border-gray-300 p-6 rounded-lg">
+          <!-- Restaurant Header -->
+          <div class="text-center border-b pb-4 mb-4">
+            <div class="text-yellow-500 text-4xl font-bold mb-2">M</div>
+            <h1 class="text-xl font-bold">McDonald's</h1>
+            <p class="text-sm text-gray-600">{{ t('ticketForm.thankYou') }}</p>
+          </div>
+
+          <!-- Ticket Info from URL -->
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <span class="font-medium">{{ t('ticketForm.ticketNumber') }}</span>
+              <span>{{ urlTicketData.ticket }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="font-medium">{{ t('ticketForm.date') }}</span>
+              <span>{{ urlTicketData.date }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="font-medium">{{ t('ticketForm.time') }}</span>
+              <span>{{ urlTicketData.time }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="font-medium">{{ t('ticketForm.customer') }}</span>
+              <span>{{ urlTicketData.customer }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="font-medium">{{ t('ticketForm.totalAmount') }}</span>
+              <span>${{ urlTicketData.total }}</span>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="text-center mt-6 text-sm text-gray-600">
+            <p>{{ t('ticketForm.success') }}</p>
+            <p>www.mcdonalds.com</p>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <div class="mt-6">
+          <button 
+            @click="closeTicketViewer"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+          >
+            {{ t('ticketForm.backToMenu') }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Ticket Options Modal -->
     <TicketOptionsModal 
-      :show="showTicketModal"
+      :is-visible="showTicketModal"
       :ticket-data="currentTicketData"
       @close="closeTicketModal"
+      @view-ticket="handleViewTicket"
+      @continue-shopping="handleContinueShopping"
     />
 
     <!-- Desktop Layout -->
@@ -120,6 +187,14 @@ const currentLanguage = ref(getCurrentLanguage())
 const showLanguageDropdown = ref(false)
 const showTicketModal = ref(false)
 const currentTicketData = ref(null)
+const showTicketViewer = ref(false)
+const urlTicketData = ref({
+  ticket: '',
+  date: '',
+  time: '',
+  customer: '',
+  total: ''
+})
 
 
 
@@ -224,27 +299,46 @@ const handleTicketGenerated = (ticketData) => {
   // Handle successful ticket generation
   console.log('Ticket generated:', ticketData)
   
-  // Store ticket data for the modal
-  currentTicketData.value = ticketData
+  // Store ticket data for the modal FIRST
+  currentTicketData.value = {
+    ...ticketData,
+    cartItems: [...cart.value], // Preserve cart items for the modal
+    customerData: ticketData.customerData
+  }
   
-  // Clear cart after ticket generation
-  clearCart()
+  // Show the ticket options modal BEFORE clearing data
+  showTicketModal.value = true
   
   // Reset views
   showTicketForm.value = false
   
-  // Navigate back to menu on mobile
+  // Navigate back to menu on mobile but keep the modal open
   if (window.innerWidth < 768) {
     handleMobileTabClick('menu')
   }
   
-  // Show the ticket options modal
-  showTicketModal.value = true
+  // Clear cart AFTER showing the modal
+  clearCart()
 }
 
 const closeTicketModal = () => {
   showTicketModal.value = false
   currentTicketData.value = null
+}
+
+const handleViewTicket = (ticketData) => {
+  // Handle viewing the full ticket
+  console.log('View ticket:', ticketData)
+  closeTicketModal()
+}
+
+const handleContinueShopping = () => {
+  // Handle continue shopping action
+  closeTicketModal()
+  // Navigate to menu view
+  if (window.innerWidth < 768) {
+    handleMobileTabClick('menu')
+  }
 }
 const getCurrentCategoryName = () => {
   const category = categories.value.find(cat => cat.id === currentCategory.value)
@@ -286,6 +380,39 @@ const handleMobileTabClick = (tabName) => {
       currentMobileView.value = tabName
   }
 }
+
+// Parse URL parameters for ticket viewing
+const parseTicketFromURL = () => {
+  const urlParams = new URLSearchParams(window.location.search)
+  const ticket = urlParams.get('ticket')
+  
+  if (ticket) {
+    urlTicketData.value = {
+      ticket: ticket,
+      date: urlParams.get('date') || '',
+      time: urlParams.get('time') || '',
+      customer: urlParams.get('customer') || '',
+      total: urlParams.get('total') || ''
+    }
+    showTicketViewer.value = true
+    return true
+  }
+  return false
+}
+
+// Close ticket viewer and return to normal app
+const closeTicketViewer = () => {
+  showTicketViewer.value = false
+  // Clear URL parameters
+  const url = new URL(window.location)
+  url.search = ''
+  window.history.replaceState({}, '', url)
+}
+
+// Check for ticket parameters on mount
+onMounted(() => {
+  parseTicketFromURL()
+})
 
 
 
