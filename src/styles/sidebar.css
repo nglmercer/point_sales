@@ -1,0 +1,158 @@
+.sidebar-nav {
+  @apply flex flex-col bg-white border-r border-gray-200;
+}
+
+.sidebar-horizontal {
+  @apply flex-row border-r-0 border-b;
+}
+
+.sidebar-dark {
+  @apply bg-gray-900 border-gray-700;
+}
+
+.sidebar-rounded {
+  @apply rounded-lg;
+}
+
+/* Navigation styles */
+.sidebar-navigation {
+  @apply flex flex-1;
+}
+
+/* Nav item styles */
+.nav-item {
+  @apply relative flex items-center p-3 transition-all duration-200 hover:bg-gray-50;
+}
+
+.sidebar-horizontal .nav-item {
+  @apply flex-col text-center;
+}
+
+.sidebar-dark .nav-item {
+  @apply hover:bg-gray-800;
+}
+
+.nav-item-active {
+  @apply bg-blue-50 text-blue-600 border-r-2 border-blue-600;
+}
+
+.sidebar-horizontal .nav-item-active {
+  @apply border-r-0 border-b-2;
+}
+
+.sidebar-dark .nav-item-active {
+  @apply bg-blue-900 text-blue-400 border-blue-400;
+}
+
+/* Icon styles */
+.nav-icon {
+  @apply relative flex items-center justify-center;
+}
+
+.sidebar-horizontal .nav-icon {
+  @apply mb-1;
+}
+
+.sidebar-compact .nav-icon {
+  @apply mx-auto;
+}
+
+/* Label styles */
+.nav-label {
+  @apply ml-3 font-medium text-gray-700 truncate;
+}
+
+.sidebar-horizontal .nav-label {
+  @apply ml-0 text-center;
+}
+
+.sidebar-dark .nav-label {
+  @apply text-gray-300;
+}
+
+.nav-item-active .nav-label {
+  @apply text-blue-600;
+}
+
+.sidebar-dark .nav-item-active .nav-label {
+  @apply text-blue-400;
+}
+
+/* Badge styles */
+.nav-badge {
+  @apply absolute -top-1 -right-1 z-10;
+}
+
+.badge-default {
+  @apply inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-medium rounded-full min-w-[1.25rem] h-5;
+}
+
+.badge-primary {
+  @apply bg-blue-500 text-white;
+}
+
+.badge-secondary {
+  @apply bg-gray-500 text-white;
+}
+
+.badge-success {
+  @apply bg-green-500 text-white;
+}
+
+.badge-warning {
+  @apply bg-yellow-500 text-white;
+}
+
+.badge-error {
+  @apply bg-red-500 text-white;
+}
+
+/* Size variants */
+.sidebar-sm .nav-item {
+  @apply p-2;
+}
+
+.sidebar-sm .nav-label {
+  @apply ml-2;
+}
+
+.sidebar-lg .nav-item {
+  @apply p-4;
+}
+
+.sidebar-lg .nav-label {
+  @apply ml-4;
+}
+
+/* Compact mode */
+.sidebar-compact {
+  @apply w-16;
+}
+
+.sidebar-compact .nav-item {
+  @apply justify-center;
+}
+
+/* Header and footer */
+.sidebar-header,
+.sidebar-footer {
+  @apply p-4 border-b border-gray-200;
+}
+
+.sidebar-dark .sidebar-header,
+.sidebar-dark .sidebar-footer {
+  @apply border-gray-700;
+}
+
+.sidebar-footer {
+  @apply border-b-0 border-t;
+}
+
+/* Indicator styles */
+.nav-indicator {
+  @apply absolute right-2 top-1/2 transform -translate-y-1/2;
+}
+
+.sidebar-horizontal .nav-indicator {
+  @apply right-1/2 top-auto bottom-1 transform translate-x-1/2 translate-y-0;
+}

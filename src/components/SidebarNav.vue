@@ -21,7 +21,7 @@
           </span>
           
           <!-- Badge/Indicator slot -->
-          <div v-if="item.badge" class="nav-badge">
+          <div v-if="item.badge || $slots[`badge-${item.id}`]" class="nav-badge">
             <slot :name="`badge-${item.id}`" :item="item" :badge="item.badge">
               <span class="badge-default" :class="getBadgeClasses(item)">
                 {{ item.badge }}
@@ -159,5 +159,6 @@ const handleItemClick = (item: NavItem, index: number) => {
 </script>
 
 <style scoped>
+/* Base sidebar styles */
 
 </style>

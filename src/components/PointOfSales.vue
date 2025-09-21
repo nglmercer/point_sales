@@ -2,46 +2,102 @@
   <div class="h-screen">
     <!-- Desktop Layout -->
     <div class="hidden md:flex h-full">
-      <!-- Category Sidebar -->
-      <CategorySidebar 
-        :categories="categories"
-        :active-category="currentCategory"
-        @category-change="handleCategoryChange"
-        @search="handleSearch"
-      />
+      <!-- Desktop Left Sidebar Navigation -->
+      <div class="w-24 bg-white border-r shadow-sm flex flex-col">
+        <!-- Logo -->
+        <div class="p-4 border-b">
+          <div class="text-yellow-500 text-2xl font-bold text-center">M</div>
+        </div>
+        
+        <!-- Category Navigation -->
+        <div class="flex-1 py-4">
+          <NavigationContainer
+            :items="categoryNavItems"
+            direction="vertical"
+            :show-labels="true"
+            :show-indicators="false"
+            :show-dots="false"
+            icon-size="24px"
+            item-spacing="8px"
+            @item-click="handleCategoryNavClick"
+          >
+            <template #item="{ item, index, isActive }">
+              <button
+                :class="[
+                  'flex flex-col items-center justify-center w-full h-full py-3 px-2 text-xs font-medium transition-colors duration-200 rounded-lg',
+                  isActive
+                    ? 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/50'
+                    : 'text-gray-600 hover:text-gray-700 hover:bg-gray-50 dark:hover:text-gray-300 dark:hover:bg-gray-700'
+                ]"
+              >
+                <span class="material-symbols-outlined mb-1" style="font-size: 24px;">
+                  {{ item.icon }}
+                </span>
+                <span class="text-center text-xs leading-tight">{{ item.label }}</span>
+              </button>
+            </template>
+          </NavigationContainer>
+        </div>
+      </div>
 
       <!-- Main Content Area -->
-      <div class="flex-1 flex">
-        <!-- Product Grid -->
-        <div class="flex-1 p-6">
-          <div class="grid grid-cols-3 gap-6">
-            <ProductCard 
-              v-for="product in filteredProducts" 
-              :key="product.id"
-              :product="product"
-              @add-to-cart="addToCart"
-            />
+      <div class="flex-1 flex flex-col">
+        <!-- Desktop Header with Search -->
+        <div class="bg-white shadow-sm border-b p-4 w-full">
+          <div class="flex items-center justify-between w-full">
+            <div class="flex-1 w-full">
+              <input
+                type="text"
+                v-model="searchQuery"
+                placeholder="Search menu items..."
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                @input="handleSearch(searchQuery)"
+              />
+            </div>
           </div>
         </div>
 
-        <!-- Order Summary / Ticket Form -->
-        <div v-if="!showTicketForm">
-          <OrderSummary 
-            :cart-items="cart"
-            @update-quantity="updateQuantity"
-            @remove-item="removeFromCart"
-            @clear-cart="clearCart"
-            @process-payment="processPayment"
-            @show-ticket-form="showTicketForm = true"
-          />
-        </div>
-        <div v-else>
-          <TicketForm 
-            :cart-items="cart"
-            :mobile="false"
-            @ticket-generated="handleTicketGenerated"
-            @back-to-cart="showTicketForm = false"
-          />
+        <!-- Content and Sidebar Container -->
+        <div class="flex-1 flex">
+          <!-- Product Grid Area -->
+          <div class="flex-1 overflow-y-auto w-full">
+            <div class="p-6 w-full">
+              <div class="mb-4 w-full">
+                <h2 class="text-xl font-semibold">{{ getCurrentCategoryName() }}</h2>
+                <p class="text-sm text-gray-600 mt-1">{{ filteredProducts.length }} items available</p>
+              </div>
+              <div class="w-full grid grid-cols-3 gap-6">
+                <ProductCard 
+                  v-for="product in filteredProducts" 
+                  :key="product.id"
+                  :product="product"
+                  @add-to-cart="addToCart"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Summary / Ticket Form Sidebar -->
+          <div class="w-80 border-l bg-gray-50">
+            <div v-if="!showTicketForm">
+              <OrderSummary 
+                :cart-items="cart"
+                @update-quantity="updateQuantity"
+                @remove-item="removeFromCart"
+                @clear-cart="clearCart"
+                @process-payment="processPayment"
+                @show-ticket-form="showTicketForm = true"
+              />
+            </div>
+            <div v-else>
+              <TicketForm 
+                :cart-items="cart"
+                :mobile="false"
+                @ticket-generated="handleTicketGenerated"
+                @back-to-cart="showTicketForm = false"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -49,8 +105,8 @@
     <!-- Mobile Layout -->
     <div class="md:hidden h-full flex flex-col">
       <!-- Mobile Header -->
-      <div class="bg-white shadow-sm border-b p-4">
-        <div class="flex items-center justify-between">
+      <div class="bg-white shadow-sm border-b p-4 w-full">
+        <div class="flex items-center justify-between w-full">
           <div class="text-yellow-500 text-2xl font-bold">M</div>
           <div class="flex items-center space-x-4">
             <!-- Cart Icon with Badge -->
@@ -70,8 +126,8 @@
       </div>
 
       <!-- Mobile Navigation Tabs -->
-      <div class="bg-white border-b shadow-sm">
-        <div class="flex" role="tablist" aria-label="Mobile navigation">
+      <div class="bg-white border-b shadow-sm w-full">
+        <div class="flex w-full" role="tablist" aria-label="Mobile navigation">
           <button 
             class="flex-1 py-3 px-2 text-center border-b-2 transition-all duration-200 text-sm font-medium relative"
             :class="getMobileTabClasses('menu')"
@@ -114,19 +170,19 @@
       </div>
 
       <!-- Mobile Content -->
-      <div class="flex-1 overflow-hidden">
+      <div class="flex-1 overflow-hidden pb-20 w-full">
         <!-- Unified Menu View -->
         <div 
           v-show="currentMobileView === 'menu'" 
           id="panel-menu"
-          class="h-full overflow-y-auto"
+          class="h-full overflow-y-auto w-full"
           role="tabpanel"
           aria-labelledby="tab-menu"
           :aria-hidden="currentMobileView !== 'menu'"
         >
-          <div class="p-4">
+          <div class="p-4 w-full">
             <!-- Search Bar -->
-            <div class="mb-4">
+            <div class="mb-4 w-full">
               <input
                 type="text"
                 v-model="searchQuery"
@@ -136,25 +192,14 @@
               />
             </div>
 
-            <!-- Category Navigation -->
-            <div class="mb-4">
-              <SidebarNav
-                :items="categoryNavItems"
-                variant="horizontal"
-                size="md"
-                rounded
-                @item-click="handleCategoryNavClick"
-              />
-            </div>
-
             <!-- Current Category Header -->
-            <div class="mb-4">
+            <div class="mb-4 w-full">
               <h2 class="text-xl font-semibold">{{ getCurrentCategoryName() }}</h2>
               <p class="text-sm text-gray-600 mt-1">{{ filteredProducts.length }} items available</p>
             </div>
 
             <!-- Products Grid -->
-            <div class="grid grid-cols-2 gap-4">
+            <div class="w-full grid grid-cols-2 gap-4">
               <ProductCard 
                 v-for="product in filteredProducts" 
                 :key="product.id"
@@ -201,17 +246,48 @@
           />
         </div>
       </div>
+
+      <!-- Mobile Bottom Category Navigation -->
+      <div
+        v-if="currentMobileView === 'menu'"
+       class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50 md:hidden">
+        <NavigationContainer
+          :items="categoryNavItems"
+          direction="horizontal"
+          :show-labels="true"
+          :show-indicators="false"
+          :show-dots="false"
+          icon-size="20px"
+          item-spacing="2px"
+          @item-click="handleCategoryNavClick"
+        >
+          <template #item="{ item, index, isActive }">
+            <button
+              :class="[
+                'flex flex-col items-center justify-center w-full h-full py-2 px-1 text-xs font-medium transition-colors duration-200 min-w-0 flex-1',
+                isActive
+                  ? 'text-blue-600 bg-blue-50'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+              ]"
+            >
+              <span class="material-symbols-outlined mb-1" style="font-size: 20px;">
+                {{ item.icon }}
+              </span>
+              <span class="text-center text-xs truncate">{{ item.label }}</span>
+            </button>
+          </template>
+        </NavigationContainer>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
-import CategorySidebar from './CategorySidebar.vue'
+import NavigationContainer from './NavigationContainer.vue'
 import ProductCard from './ProductCard.vue'
 import OrderSummary from './OrderSummary.vue'
 import TicketForm from './TicketForm.vue'
-import SidebarNav from './SidebarNav.vue'
 
 // Food data with proper image URLs and fallbacks
 const foodData = {
@@ -241,11 +317,11 @@ const foodData = {
 
 // Categories configuration
 const categories = [
-  { id: 'meals', name: 'Meals', icon: '🍽️' },
-  { id: 'burgers', name: 'Burgers', icon: '🍔' },
-  { id: 'sandwiches', name: 'Sandwiches', icon: '🥪' },
-  { id: 'sides', name: 'Sides', icon: '🍟' },
-  { id: 'drinks', name: 'Drinks', icon: '🥤' }
+  { id: 'meals', name: 'Meals', icon: 'restaurant' },
+  { id: 'burgers', name: 'Burgers', icon: 'lunch_dining' },
+  { id: 'sandwiches', name: 'Sandwiches', icon: 'fastfood' },
+  { id: 'sides', name: 'Sides', icon: 'fastfood' },
+  { id: 'drinks', name: 'Drinks', icon: 'local_drink' }
 ]
 
 // Reactive state
