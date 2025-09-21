@@ -1,11 +1,11 @@
 <template>
-  <div :class="mobile ? 'h-full bg-white flex flex-col' : 'w-80 bg-white shadow-lg'">
+  <div :class="mobile ? 'h-full bg-white flex flex-col' : 'bg-white shadow-lg'">
     <div class="p-4 border-b">
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-semibold">{{ mobile ? 'Your Order' : 'New Order' }}</h2>
         <button 
           class="p-2 hover:bg-gray-100 rounded-lg transition-colors" 
-          @click="$emit('clear-cart')"
+          @click="() => emit('clear-cart')"
           v-if="cartItems.length > 0"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -53,7 +53,7 @@
           <div class="flex items-center space-x-2">
             <button 
               class="w-8 h-8 rounded-full bg-white border flex items-center justify-center hover:bg-gray-50" 
-              @click="$emit('update-quantity', item.id, item.quantity - 1)"
+              @click="() => emit('update-quantity', item.id, item.quantity - 1)"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
@@ -62,7 +62,7 @@
             <span class="w-8 text-center font-medium">{{ item.quantity }}</span>
             <button 
               class="w-8 h-8 rounded-full bg-white border flex items-center justify-center hover:bg-gray-50" 
-              @click="$emit('update-quantity', item.id, item.quantity + 1)"
+              @click="() => emit('update-quantity', item.id, item.quantity + 1)"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -72,7 +72,7 @@
           
           <button 
             class="p-2 hover:bg-gray-200 rounded-lg transition-colors" 
-            @click="$emit('remove-item', item.id)"
+            @click="() => emit('remove-item', item.id)"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -93,7 +93,7 @@
         <!-- Generate Ticket Button -->
         <button 
           class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
-          @click="$emit('process-payment')"
+          @click="() => emit('process-payment')"
         >
           <span>Generate Ticket</span>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,10 +119,19 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['update-quantity', 'remove-item', 'clear-cart', 'process-payment'])
+
 const imageErrors = ref(new Set())
 
 const totalAmount = computed(() => {
-  return props.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  if (!props.cartItems || props.cartItems.length === 0) {
+    return 0
+  }
+  return props.cartItems.reduce((sum, item) => {
+    const price = parseFloat(item.price) || 0
+    const quantity = parseInt(item.quantity) || 0
+    return sum + (price * quantity)
+  }, 0)
 })
 
 const getImageError = (itemId) => {
@@ -132,6 +141,4 @@ const getImageError = (itemId) => {
 const setImageError = (itemId) => {
   imageErrors.value.add(itemId)
 }
-
-defineEmits(['update-quantity', 'remove-item', 'clear-cart', 'process-payment'])
 </script>
