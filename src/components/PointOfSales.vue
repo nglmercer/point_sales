@@ -3,7 +3,7 @@
     <!-- Notification Component -->
     <NotificationComponent />
     <!-- Ticket Viewer (when accessed via QR code) -->
-    <div v-if="showTicketViewer" class="fixed inset-0 bg-white z-50 overflow-y-auto">
+    <div v-if="showTicketViewer" class="fixed inset-0 bg-white/95 backdrop-blur-md z-50 overflow-y-auto">
       <div class="max-w-md mx-auto p-4">
         <!-- Header -->
         <div class="flex items-center justify-between mb-6 p-4 bg-blue-600 text-white rounded-lg">
@@ -16,7 +16,7 @@
         </div>
 
         <!-- Ticket Content -->
-        <div class="bg-white border-2 border-dashed border-gray-300 p-6 rounded-lg">
+        <div class="bg-white/90 backdrop-blur-sm border-2 border-dashed border-gray-300 p-6 rounded-lg shadow-lg">
           <!-- Restaurant Header -->
           <div class="text-center border-b pb-4 mb-4">
             <div class="text-yellow-500 text-4xl font-bold mb-2">M</div>
@@ -77,7 +77,7 @@
     />
 
     <!-- Mobile Ticket Form (Full Screen) -->
-    <div v-if="showMobileTicketForm" class="fixed inset-0 bg-white z-40 md:hidden">
+    <div v-if="showMobileTicketForm" class="fixed inset-0 bg-gray-50 z-30 md:hidden">
       <TicketForm
         :cart-items="cart"
         :mobile="true"
@@ -88,8 +88,8 @@
     </div>
 
     <!-- Desktop Ticket Form (Modal) -->
-    <div v-if="showDesktopTicketForm" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:flex items-center justify-center">
-      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-hidden">
+    <div v-if="showDesktopTicketForm" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 hidden md:flex items-center justify-center">
+      <div class="bg-white/95 backdrop-blur-md rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-hidden border border-gray-200">
         <TicketForm
           :cart-items="cart"
           :mobile="false"

@@ -6,6 +6,16 @@
         <h2 :class="mobile ? 'text-lg font-semibold' : 'text-xl font-semibold text-gray-800'">
           {{ showTicket ? t('ticketForm.yourReceipt') : t('ticketForm.customerInfo') }}
         </h2>
+        <!-- Cancel/Close Button -->
+        <button 
+          @click="handleCancel"
+          :class="mobile ? 'text-white hover:text-gray-200 p-2' : 'text-gray-500 hover:text-gray-700 p-2'"
+          type="button"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -183,7 +193,20 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="mt-6 space-y-3">
+          <!-- Back to Menu Button -->
+          <button 
+            @click="handleBackToMenu"
+            :class="mobile ? 'w-full bg-gray-600 hover:bg-gray-700 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2' : 'w-full bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2'"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            {{ mobile ? t('ticketForm.backToMenu') : t('ticketForm.close') }}
+          </button>
+          
+          <!-- Download/Print Actions -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
           <button 
             @click="downloadTicketPDF"
             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
@@ -223,6 +246,7 @@
             </svg>
             {{ t('ticketForm.downloadText') }}
           </button>
+          </div>
         </div>
       </div>
     </div>
@@ -339,6 +363,26 @@ const total = computed(() => {
 })
 
 // Methods
+const handleCancel = () => {
+  if (showTicket.value) {
+    // If showing ticket, go back to form
+    showTicket.value = false
+  } else {
+    // If in form, emit back-to-cart or close
+    if (props.mobile) {
+      emit('back-to-cart')
+    } else {
+      emit('close')
+    }
+  }
+}
+
+const handleBackToMenu = () => {
+  // Reset form and emit complete to go back to menu
+  resetForm()
+  emit('complete')
+}
+
 const generateTicket = async () => {
   // Generate ticket number and timestamp
   ticketNumber.value = 'MCK' + Date.now().toString().slice(-6)

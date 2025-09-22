@@ -9,7 +9,7 @@
     />
 
     <!-- Mobile Content -->
-    <div class="flex-1 overflow-hidden pb-20 w-full">
+    <div class="flex-1 overflow-hidden w-full">
       <!-- Menu View -->
       <div 
         v-show="currentMobileView === 'menu'" 
