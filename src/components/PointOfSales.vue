@@ -221,6 +221,10 @@ const urlTicketData = ref({
   total: ''
 })
 
+// Viewport tracking for modal management
+const isDesktop = ref(window.innerWidth >= 768)
+const resizeListener = ref(null)
+
 
 
 // Computed properties
@@ -452,9 +456,47 @@ const closeTicketViewer = () => {
   window.history.replaceState({}, '', url)
 }
 
+// Function to close all modals
+const closeAllModals = () => {
+  showMobileTicketForm.value = false
+  showDesktopTicketForm.value = false
+  showTicketModal.value = false
+  // Reset form data when closing
+  if (mobileTicketFormRef.value) {
+    mobileTicketFormRef.value.resetForm()
+  }
+  if (desktopTicketFormRef.value) {
+    desktopTicketFormRef.value.resetForm()
+  }
+}
+
+// Handle viewport changes
+const handleViewportChange = () => {
+  const newIsDesktop = window.innerWidth >= 768
+  
+  // If viewport changed and any modal is open, close all modals
+  if (newIsDesktop !== isDesktop.value) {
+    if (showMobileTicketForm.value || showDesktopTicketForm.value || showTicketModal.value) {
+      closeAllModals()
+    }
+    isDesktop.value = newIsDesktop
+  }
+}
+
 // Check for ticket parameters on mount
 onMounted(() => {
   parseTicketFromURL()
+  
+  // Add resize listener to handle viewport changes
+  resizeListener.value = handleViewportChange
+  window.addEventListener('resize', resizeListener.value)
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  if (resizeListener.value) {
+    window.removeEventListener('resize', resizeListener.value)
+  }
 })
 
 
