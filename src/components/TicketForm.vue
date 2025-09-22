@@ -1,5 +1,5 @@
 <template>
-  <div :class="mobile ? 'h-full flex flex-col bg-white' : 'w-96 bg-white rounded-lg shadow-lg'">
+  <div :class="mobile ? 'h-full flex flex-col bg-white' : 'max-w-md bg-white rounded-lg shadow-lg'">
     <!-- Header -->
     <div :class="mobile ? 'p-4 border-b bg-blue-600 text-white' : 'p-6 border-b'">
       <div class="flex items-center justify-between">

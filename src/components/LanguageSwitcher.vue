@@ -4,7 +4,7 @@
       <!-- Current Language Button -->
       <button 
         @click="toggleLanguageDropdown"
-        class="flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 shadow-md transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+        class="flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg px-2 py-2 shadow-md transition-all duration-200 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
       >
         <span class="text-xl">{{ currentLanguage === 'es' ? '🇪🇸' : '🇺🇸' }}</span>
         <span class="font-medium text-gray-700">{{ currentLanguage === 'es' ? 'ES' : 'EN' }}</span>
@@ -23,7 +23,7 @@
       >
         <button
           @click="selectLanguage('es')"
-          class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-blue-50 transition-colors duration-150"
+          class="w-full flex items-center gap-2 px-2 py-2 text-left hover:bg-blue-50 transition-colors duration-150"
           :class="{ 'bg-blue-50 border-r-2 border-blue-500': currentLanguage === 'es' }"
         >
           <span class="text-xl">🇪🇸</span>
@@ -41,7 +41,7 @@
         
         <button
           @click="selectLanguage('en')"
-          class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-blue-50 transition-colors duration-150"
+          class="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-blue-50 transition-colors duration-150"
           :class="{ 'bg-blue-50 border-r-2 border-blue-500': currentLanguage === 'en' }"
         >
           <span class="text-xl">🇺🇸</span>

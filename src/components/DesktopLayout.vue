@@ -6,7 +6,7 @@
       <div class="p-4 border-b">
         <div class="text-yellow-500 text-2xl font-bold text-center">M</div>
       </div>
-      
+        <LanguageSwitcher />
       <!-- Category Navigation -->
       <div class="flex-1 py-4">
         <NavigationContainer
@@ -87,6 +87,7 @@ import NavigationContainer from './NavigationContainer.vue'
 import SearchBar from './SearchBar.vue'
 import ProductGrid from './ProductGrid.vue'
 import OrderSummary from './OrderSummary.vue'
+import LanguageSwitcher from './LanguageSwitcher.vue'
 
 defineProps({
   categoryNavItems: {
