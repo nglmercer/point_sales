@@ -77,11 +77,10 @@
           <p class="text-sm text-gray-600 mt-2">{{ t('ticketModal.qrCodeDescription') }}</p>
         </div>
 
-        <!-- Action Options -->
+<!--         
         <div class="space-y-3">
           <h4 class="font-medium text-gray-800 mb-3">{{ t('ticketModal.chooseAction') }}</h4>
           
-          <!-- View Full Ticket -->
           <button 
             @click="viewFullTicket"
             class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-3"
@@ -90,7 +89,6 @@
             {{ t('ticketModal.viewFullTicket') }}
           </button>
 
-          <!-- Print Ticket -->
           <button 
             @click="printTicket"
             class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-3"
@@ -99,7 +97,6 @@
             {{ t('ticketModal.printTicket') }}
           </button>
 
-          <!-- Download PDF -->
           <button 
             @click="downloadPDF"
             class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-3"
@@ -108,7 +105,6 @@
             {{ t('ticketModal.downloadPDF') }}
           </button>
 
-          <!-- Download Text -->
           <button 
             @click="downloadText"
             class="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-3"
@@ -117,7 +113,6 @@
             {{ t('ticketModal.downloadText') }}
           </button>
 
-          <!-- Email Ticket -->
           <button 
             @click="emailTicket"
             class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-3"
@@ -125,7 +120,7 @@
             <span class="material-symbols-outlined">email</span>
             {{ t('ticketModal.emailTicket') }}
           </button>
-        </div>
+        </div> -->
 
         <!-- Continue Shopping -->
         <div class="mt-6 pt-4 border-t">
