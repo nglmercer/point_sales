@@ -1,3 +1,4 @@
+
 export interface ShowIfCondition {
   field: string;
   value: boolean | string | number | (string | number | boolean)[];
@@ -53,6 +54,12 @@ const defaultProductFormConfig: FormConfig = {
     type: 'url',
     placeholder: '/images/product-image.svg'
   },
+  category: {
+    label: 'Categoría',
+    type: 'select',
+    required: true,
+    options: getCategories()
+  },
   fallback: {
     label: 'Emoji de respaldo',
     type: 'text',
@@ -64,7 +71,19 @@ const defaultProductFormConfig: FormConfig = {
     readonly: true
   }
 };
-
+function getCategories(){
+  const categories = () => [
+    { id: 'meals', name: 'Comidas', icon: 'restaurant' },
+    { id: 'burgers', name: 'Hamburguesas', icon: 'lunch_dining' },
+    { id: 'sandwiches', name: 'Sandwiches', icon: 'fastfood' },
+    { id: 'sides', name: 'Postres', icon: 'fastfood' },
+    { id: 'drinks', name: 'Bebidas', icon: 'local_drink' }
+  ]
+  return categories().map(item => ({
+    value: item.id,
+    label: item.name
+  }))
+}
 const defaultProductData: FormData = {
   id: '',
   name: 'Nuevo Producto',
