@@ -70,8 +70,8 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { changeLanguage, getCurrentLanguage } from '../utils/i18n.js'
-import { emitter } from '../utils/Emitter.ts'
+import { changeLanguage, getCurrentLanguage } from '../../utils/i18n.js'
+import { emitter } from '../../utils/Emitter.ts'
 
 // Reactive state
 const currentLanguage = ref(getCurrentLanguage())

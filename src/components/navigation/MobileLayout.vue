@@ -89,9 +89,9 @@
 <script setup>
 import MobileHeader from './MobileHeader.vue'
 import NavigationContainer from './NavigationContainer.vue'
-import SearchBar from './SearchBar.vue'
-import ProductGrid from './ProductGrid.vue'
-import OrderSummary from './OrderSummary.vue'
+import SearchBar from '@components/products/SearchBar.vue'
+import ProductGrid from '@components/products/ProductGrid.vue'
+import OrderSummary from '../OrderSummary.vue'
 
 defineProps({
   currentMobileView: {

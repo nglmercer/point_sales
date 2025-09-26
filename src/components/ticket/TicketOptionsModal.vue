@@ -143,7 +143,7 @@ import { useI18n } from 'vue-i18n'
 import QRCode from 'qrcode'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
-import { emitter } from '../utils/Emitter'
+import { emitter } from '../../utils/Emitter'
 
 const { t } = useI18n()
 
