@@ -9,7 +9,13 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   integrations: [vue({ 
     devtools: true,
-    appEntrypoint: '/src/utils/vue-app.js'
+    appEntrypoint: '/src/utils/vue-app.js',
+    template: {
+      compilerOptions: {
+        // Tratar todas las etiquetas con un guion como elementos personalizados
+        isCustomElement: (tag) => tag.includes('-')
+      }
+    }
   })],
 
   vite: {

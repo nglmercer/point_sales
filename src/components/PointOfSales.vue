@@ -143,6 +143,15 @@
       @ticket-generated="handleTicketGenerated"
       @category-nav-click="handleCategoryNavClick"
     />
+    <dlg-cont class="productsModal" :visible="showProductsModal">
+      <MainForm
+        :form-id="'productsForm'"
+        :title="t('ticketForm.products')"
+        :description="t('ticketForm.productsDescription')"
+        :darkmode="true"
+        ref="mainFormRef"
+      />
+    </dlg-cont>
   </div>
 </template>
 
@@ -160,10 +169,12 @@ import NotificationComponent from './NotificationComponent.vue'
 import LanguageSwitcher from './LanguageSwitcher.vue'
 import TicketOptionsModal from './TicketOptionsModal.vue'
 import { emitter } from '../utils/Emitter'
-
+import MainForm from './Forms/MainForm.vue'
+import '@litcomponents/dialog.js'
+import '@litcomponents/CInput.js'
 // i18n setup
 const { t } = useI18n()
-
+const showProductsModal = ref(false)
 // Food data with proper image URLs and fallbacks
 const foodData = {
   burgers: [
@@ -486,7 +497,7 @@ const handleViewportChange = () => {
 // Check for ticket parameters on mount
 onMounted(() => {
   parseTicketFromURL()
-  
+  showProductsModal.value = true
   // Add resize listener to handle viewport changes
   resizeListener.value = handleViewportChange
   window.addEventListener('resize', resizeListener.value)

@@ -1,0 +1,76 @@
+export interface ShowIfCondition {
+  field: string;
+  value: boolean | string | number | (string | number | boolean)[];
+  negate?: boolean;
+}
+
+export interface FieldConfig {
+  label?: string;
+  type?: 'text' | 'textarea' | 'switch' | 'checkbox' | 'boolean' | 'number' | 'range' | 'select' | 'radio' | 'email' | 'password' | 'tel' | 'url' | 'date' | 'time' | 'color' | 'file';
+  required?: boolean;
+  disabled?: boolean;
+  readonly?: boolean;
+  hidden?: boolean;
+  placeholder?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  pattern?: string;
+  multiple?: boolean;
+  options?: Array<{ value: string; label: string }>;
+  showIf?: ShowIfCondition;
+}
+
+export interface FormConfig {
+  [key: string]: FieldConfig;
+}
+
+export interface FormData {
+  [key: string]: string | number | boolean | string[];
+}
+const defaultProductFormConfig: FormConfig = {
+  name: {
+    label: 'Nombre del Producto',
+    type: 'text',
+    required: true,
+    placeholder: 'Ingresa el nombre del producto'
+  },
+  price: {
+    label: 'Precio',
+    type: 'number',
+    required: true,
+    min: 0,
+    step: 0.01,
+    placeholder: '0.00'
+  },
+  description: {
+    label: 'Descripción',
+    type: 'textarea',
+    placeholder: 'Descripción del producto (opcional)'
+  },
+  image: {
+    label: 'Imagen',
+    type: 'url',
+    placeholder: '/images/product-image.svg'
+  },
+  fallback: {
+    label: 'Emoji de respaldo',
+    type: 'text',
+    placeholder: '🍔',
+  },
+  id: {
+    label: 'ID',
+    type: 'number',
+    readonly: true
+  }
+};
+
+const defaultProductData: FormData = {
+  id: '',
+  name: 'Nuevo Producto',
+  price: 0.00,
+  description: '',
+  image: '/images/default-product.svg',
+  fallback: '🍽️'
+};
+export { defaultProductFormConfig, defaultProductData };
