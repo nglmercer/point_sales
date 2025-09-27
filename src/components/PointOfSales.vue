@@ -170,10 +170,10 @@ import TicketOptionsModal from './ticket/TicketOptionsModal.vue'
 import MainForm from './Forms/MainForm.vue'
 import '@litcomponents/dialog.js'
 import '@litcomponents/CInput.js'
-import { seedData, type Product } from '@/utils/productStore.js'
+import { dbManager, type Product as DBProduct,seedData,initializeDatabase } from '@/utils/productStore.js'
 
 // --- Type Definitions ---
-interface CartItem extends Product {
+interface CartItem extends DBProduct {
   quantity: number;
 }
 interface CustomerData {
@@ -224,7 +224,6 @@ const searchQuery = ref<string>('')
 const currentMobileView = ref<'menu' | 'cart'>('menu')
 const showMobileTicketForm = ref<boolean>(false)
 const showDesktopTicketForm = ref<boolean>(false)
-const showLanguageDropdown = ref<boolean>(false)
 const showTicketModal = ref<boolean>(false)
 const currentTicketData = ref<TicketData | null>(null)
 const showTicketViewer = ref<boolean>(false)
@@ -241,15 +240,40 @@ const urlTicketData = ref({
 // Viewport tracking for modal management
 const isDesktop = ref<boolean>(window.innerWidth >= 768)
 const resizeListener = ref<(() => void) | null>(null)
-const allProducts = ref<Product[]>([])
-const productsByCategory = ref<Record<string, Product[]>>({})
+const allProducts = ref<DBProduct[]>([])
+const productsByCategory = ref<Record<string, DBProduct[]>>({})
 
 // Computed properties
-const currentProducts = computed<Product[]>(() => {
+const currentProducts = computed<DBProduct[]>(() => {
   return productsByCategory.value[currentCategory.value] || []
 })
+const loadProductsFromDB = async () => {
+  try {
+    const products = await dbManager.getAll() as DBProduct[];
+    allProducts.value = products;
 
-const filteredProducts = computed<Product[]>(() => {
+    // Agrupar productos por categoría
+    productsByCategory.value = products.reduce((acc, product) => {
+      const category = product.category || 'uncategorized';
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(product);
+      return acc;
+    }, {} as Record<string, DBProduct[]>);
+    
+    console.log('Products loaded from IndexedDB.');
+
+  } catch (error) {
+    console.error("Failed to load products from IndexedDB:", error);
+    // Opcional: manejar el error, por ejemplo, mostrando una notificación al usuario
+  }
+};
+const handleDatabaseUpdate = (data: any) => {
+  console.log(`Database event triggered:`, data);
+  loadProductsFromDB();
+};
+const filteredProducts = computed<DBProduct[]>(() => {
   if (!searchQuery.value) {
     return currentProducts.value
   }
@@ -468,7 +492,15 @@ const handleViewportChange = () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await initializeDatabase();
+  await loadProductsFromDB();
+  const initalData = await dbManager.getAll()
+  handleDatabaseUpdate(initalData);
+  dbManager.on('add', handleDatabaseUpdate);
+  dbManager.on('update', handleDatabaseUpdate);
+  dbManager.on('delete', handleDatabaseUpdate);
+  dbManager.on('clear', handleDatabaseUpdate); // También es bueno escuchar el evento de limpiar
   // Populate products
   productsByCategory.value = seedData;
   allProducts.value = Object.values(seedData).flat();
@@ -480,6 +512,11 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  dbManager.off('add', handleDatabaseUpdate);
+  dbManager.off('update', handleDatabaseUpdate);
+  dbManager.off('delete', handleDatabaseUpdate);
+  dbManager.off('clear', handleDatabaseUpdate);
+  
   if (resizeListener.value) {
     window.removeEventListener('resize', resizeListener.value)
   }

@@ -1,21 +1,27 @@
-import type{ DatabaseConfig, DatabaseItem } from "idb-manager";
+// src/utils/productStore.js
+
 import { IndexedDBManager } from "idb-manager";
+import type { DatabaseConfig, DatabaseItem } from "idb-manager";
+
 const dbConfig: DatabaseConfig = {
   name: 'PointSales',
   version: 1,
   store: 'products'
 };
-const dbManager = new IndexedDBManager(dbConfig,{autoInit:true});
-const sample = { id: 1, name: "Quarter Pounder With Cheese", price: 3.99, image: "/images/quarter-pounder-cheese.svg", fallback: "🍔" }
+
+// Creamos la instancia. Con autoInit: true, intentará abrir la DB al instanciar.
+const dbManager = new IndexedDBManager(dbConfig, { autoInit: true });
+
 interface Product extends DatabaseItem {
   id: number;
   name: string;
   price: number;
   image: string;
   fallback: string;
+  category: string;
   description?: string;
 }
-// defaultExistendItems 
+
 const seedData = {
   burgers: [
     { id: 1, name: "Quarter Pounder With Cheese", price: 3.99, image: "/images/quarter-pounder-cheese.svg", fallback: "🍔", category: "burgers" },
@@ -41,22 +47,32 @@ const seedData = {
   ]
 };
 
-async function seedDatabase() {
+/**
+ * Ensures the database is initialized and seeds it with initial data if it's empty.
+ */
+async function initializeDatabase() {
+  // `dbManager.init()` devuelve una promesa que se resuelve cuando la DB está lista.
   await dbManager.openDatabase();
-  // Clear existing data
-  //await dbManager.clearDatabase();
+  
   const existingItems = await dbManager.getAll();
+  
+  // Solo sembramos si la base de datos está vacía.
   if (!existingItems || existingItems.length === 0) {
+    console.log("Database is empty, seeding with initial products.");
     const allProductsToSeed = Object.values(seedData).flat();
     await dbManager.addMany(allProductsToSeed);
-    console.log("Database seeded with initial products.");
+    console.log("Database seeded successfully.");
+  } else {
+    console.log("Database already contains data, skipping seed.");
   }
 }
-seedDatabase()
+
+// Ya no llamamos a seedDatabase() aquí, dejamos que el componente controle la inicialización.
+
 export {
     dbManager,
+    initializeDatabase, // <-- Exportamos la nueva función
     dbConfig,
     type Product,
     seedData
 }
-//dbManager.add(sample)
