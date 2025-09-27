@@ -41,32 +41,43 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 
-const props = defineProps({
-  product: {
-    type: Object,
-    required: true
-  },
-  mobile: {
-    type: Boolean,
-    default: false
-  }
-})
 
-const imageError = ref(false)
-const imageLoading = ref(true)
-
-const handleImageError = () => {
-  imageError.value = true
-  imageLoading.value = false
+// Or define the type inline if you don't have a shared types file:
+interface Product {
+  id: string | number;
+  name: string;
+  price: number;
+  image: string;
+  fallback?: string;
 }
 
-const handleImageLoad = () => {
-  imageLoading.value = false
-  imageError.value = false
+
+interface Props {
+  product: Product;
+  mobile?: boolean;
 }
 
-defineEmits(['add-to-cart'])
+withDefaults(defineProps<Props>(), {
+  mobile: false
+});
+
+defineEmits<{
+  (e: 'add-to-cart', id: string | number): void
+}>();
+
+const imageError = ref<boolean>(false);
+const imageLoading = ref<boolean>(true);
+
+const handleImageError = (): void => {
+  imageError.value = true;
+  imageLoading.value = false;
+};
+
+const handleImageLoad = (): void => {
+  imageLoading.value = false;
+  imageError.value = false;
+};
 </script>

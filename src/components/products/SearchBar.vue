@@ -8,26 +8,25 @@
         'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors',
         inputClass
       ]"
-      @input="$emit('update:modelValue', $event.target.value)"
+      @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
     />
   </div>
 </template>
 
-<script setup>
-defineProps({
-  modelValue: {
-    type: String,
-    default: ''
-  },
-  placeholder: {
-    type: String,
-    default: 'Search...'
-  },
-  inputClass: {
-    type: String,
-    default: ''
-  }
-})
+<script setup lang="ts">
+interface Props {
+  modelValue: string;
+  placeholder?: string;
+  inputClass?: string;
+}
 
-defineEmits(['update:modelValue'])
+withDefaults(defineProps<Props>(), {
+  modelValue: '',
+  placeholder: 'Search...',
+  inputClass: ''
+});
+
+defineEmits<{
+  (e: 'update:modelValue', value: string): void
+}>();
 </script>

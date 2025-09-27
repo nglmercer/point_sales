@@ -7,10 +7,11 @@
           {{ showTicket ? t('ticketForm.yourReceipt') : t('ticketForm.customerInfo') }}
         </h2>
         <!-- Cancel/Close Button -->
-        <button 
+        <button
           @click="handleCancel"
           :class="mobile ? 'text-white hover:text-gray-200 p-2' : 'text-gray-500 hover:text-gray-700 p-2'"
           type="button"
+          aria-label="Close"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -26,10 +27,11 @@
         <form @submit.prevent="generateTicket" class="space-y-4">
           <!-- Name -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
+            <label for="fullName" class="block text-sm font-medium text-gray-700 mb-1">
               {{ t('ticketForm.fullNameRequired') }}
             </label>
             <input
+              id="fullName"
               v-model="customerData.name"
               type="text"
               required
@@ -40,10 +42,11 @@
 
           <!-- Email -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
               {{ t('ticketForm.emailRequired') }}
             </label>
             <input
+              id="email"
               v-model="customerData.email"
               type="email"
               required
@@ -54,10 +57,11 @@
 
           <!-- Phone -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
+            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">
               {{ t('ticketForm.phoneNumber') }}
             </label>
             <input
+              id="phone"
               v-model="customerData.phone"
               type="tel"
               :class="mobile ? 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm' : 'w-full px-3 py-2 border border-gray-300 rounded-md'"
@@ -67,10 +71,11 @@
 
           <!-- Address -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
+            <label for="address" class="block text-sm font-medium text-gray-700 mb-1">
               {{ t('ticketForm.address') }}
             </label>
             <textarea
+              id="address"
               v-model="customerData.address"
               rows="2"
               :class="mobile ? 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm' : 'w-full px-3 py-2 border border-gray-300 rounded-md'"
@@ -80,15 +85,16 @@
 
           <!-- Order Type -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
+            <label for="orderType" class="block text-sm font-medium text-gray-700 mb-1">
               {{ t('ticketForm.orderTypeRequired') }}
             </label>
             <select
+              id="orderType"
               v-model="customerData.orderType"
               required
               :class="mobile ? 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm' : 'w-full px-3 py-2 border border-gray-300 rounded-md'"
             >
-              <option value="">{{ t('ticketForm.selectOrderType') }}</option>
+              <option value="" disabled>{{ t('ticketForm.selectOrderType') }}</option>
               <option value="dine-in">{{ t('ticketForm.dineIn') }}</option>
               <option value="takeout">{{ t('ticketForm.takeout') }}</option>
               <option value="delivery">{{ t('ticketForm.delivery') }}</option>
@@ -99,7 +105,7 @@
           <div class="border-t pt-4">
             <h3 class="font-medium text-gray-800 mb-2">{{ t('ticketForm.orderSummary') }}</h3>
             <div class="space-y-1 text-sm">
-              <div v-for="item in cartItems" :key="item.id" class="flex justify-between">
+              <div v-for="item in cartItems" :key="String(item.id)" class="flex justify-between">
                 <span>{{ item.name }} x{{ item.quantity }}</span>
                 <span>${{ (item.price * item.quantity).toFixed(2) }}</span>
               </div>
@@ -164,14 +170,14 @@
           <!-- Order Items -->
           <div class="space-y-2">
             <h3 class="font-medium">{{ t('ticketForm.orderDetails') }}</h3>
-            <div v-for="item in cartItems" :key="item.id" class="flex justify-between text-sm">
+            <div v-for="item in cartItems" :key="String(item.id)" class="flex justify-between text-sm">
               <div>
                 <span>{{ item.name }}</span>
                 <span class="text-gray-600"> x{{ item.quantity }}</span>
               </div>
               <span>${{ (item.price * item.quantity).toFixed(2) }}</span>
             </div>
-            
+
             <!-- Total -->
             <div class="border-t pt-2 font-semibold flex justify-between">
               <span>{{ t('ticketForm.totalAmount') }}</span>
@@ -195,7 +201,7 @@
         <!-- Action Buttons -->
         <div class="mt-6 space-y-3">
           <!-- Back to Menu Button -->
-          <button 
+          <button
             @click="handleBackToMenu"
             :class="mobile ? 'w-full bg-gray-600 hover:bg-gray-700 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2' : 'w-full bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2'"
           >
@@ -204,445 +210,217 @@
             </svg>
             {{ mobile ? t('ticketForm.backToMenu') : t('ticketForm.close') }}
           </button>
-          
-          <!-- Download/Print Actions -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <button 
-            @click="downloadTicketPDF"
-            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            {{ t('ticketForm.downloadPDF') }}
-          </button>
-          
-          <button 
-            @click="printTicket"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-            </svg>
-            {{ t('ticketForm.print') }}
-          </button>
-          
-          <button 
-            @click="openTicketPage"
-            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-            </svg>
-            {{ t('ticketForm.openPage') }}
-          </button>
-          
-          <button 
-            @click="downloadTicket"
-            class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            {{ t('ticketForm.downloadText') }}
-          </button>
-          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import QRCode from 'qrcode'
-import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
+// To enable the functions below, you may need to install type definitions:
+// npm install --save-dev @types/jspdf @types/html2canvas
+// import jsPDF from 'jspdf'
+// import html2canvas from 'html2canvas'
 
-const { t } = useI18n()
+// --- TYPE DEFINITIONS ---
 
-// Helper function to get order type translation
-const getOrderTypeTranslation = (orderType) => {
-  const translations = {
-    'dine-in': t('ticketForm.orderTypes.dineIn'),
-    'takeout': t('ticketForm.orderTypes.takeout'),
-    'delivery': t('ticketForm.orderTypes.delivery')
-  }
-  return translations[orderType] || orderType.replace('-', ' ')
+interface CartItem {
+  id: string | number;
+  name: string;
+  quantity: number;
+  price: number;
 }
 
-// Generate QR Code with ticket URL
-const generateQRCode = async () => {
-  try {
-    // Create a simple URL with essential ticket information
-    const baseUrl = window.location.origin + window.location.pathname
-    const ticketUrl = `${baseUrl}?ticket=${ticketNumber.value}&date=${encodeURIComponent(ticketDate.value)}&time=${encodeURIComponent(ticketTime.value)}&total=${total.value}&customer=${encodeURIComponent(customerData.value.name)}`
-    
-    qrCodeDataURL.value = await QRCode.toDataURL(ticketUrl, {
-      width: 200,
-      margin: 2,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF'
-      }
-    })
-  } catch (error) {
-    console.error('Error generating QR code:', error)
-    // Fallback: create an even simpler QR code with just the ticket number
-    try {
-      const fallbackUrl = `${window.location.origin}?ticket=${ticketNumber.value}`
-      qrCodeDataURL.value = await QRCode.toDataURL(fallbackUrl, {
-        width: 200,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
-      })
-    } catch (fallbackError) {
-      console.error('Fallback QR code generation also failed:', fallbackError)
-      qrCodeDataURL.value = ''
-    }
-  }
+type OrderType = 'dine-in' | 'takeout' | 'delivery';
+
+interface CustomerData {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  orderType: OrderType | ''; // Allow empty string for initial state
 }
 
-const props = defineProps({
-  cartItems: {
-    type: Array,
-    required: true
-  },
-  mobile: {
-    type: Boolean,
-    default: false
-  }
-})
+interface TicketData {
+  ticketNumber: string;
+  customerData: CustomerData;
+  cartItems: CartItem[];
+  total: number;
+  date: string;
+  time: string;
+  qrCodeDataURL: string;
+}
 
-const emit = defineEmits(['close', 'complete', 'ticket-generated', 'back-to-cart'])
 
-// Reactive data
-const showTicket = ref(false)
-const customerData = ref({
+// --- PROPS & EMITS ---
+
+const props = withDefaults(defineProps<{
+  cartItems: CartItem[];
+  mobile?: boolean;
+}>(), {
+  mobile: false,
+});
+
+const emit = defineEmits<{
+  (e: 'close'): void;
+  (e: 'complete'): void;
+  (e: 'ticket-generated', payload: TicketData): void;
+  (e: 'back-to-cart'): void;
+}>();
+
+
+// --- COMPOSITION API ---
+
+const { t } = useI18n();
+
+
+// --- REACTIVE STATE ---
+
+const showTicket = ref<boolean>(false);
+const customerData = ref<CustomerData>({
   name: '',
   email: '',
   phone: '',
   address: '',
-  orderType: ''
-})
+  orderType: '',
+});
 
-const ticketNumber = ref('')
-const ticketDate = ref('')
-const ticketTime = ref('')
-const qrCodeDataURL = ref('')
-const ticketRef = ref(null)
+const ticketNumber = ref<string>('');
+const ticketDate = ref<string>('');
+const ticketTime = ref<string>('');
+const qrCodeDataURL = ref<string>('');
+const ticketRef = ref<HTMLDivElement | null>(null);
 
-// Reset form function
-const resetForm = () => {
-  showTicket.value = false
+
+// --- COMPUTED PROPERTIES ---
+
+const total = computed<number>(() => {
+  return props.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+});
+
+
+// --- METHODS ---
+
+const getOrderTypeTranslation = (orderType: OrderType | ''): string => {
+  if (!orderType) return '';
+  const translations: Record<OrderType, string> = {
+    'dine-in': t('ticketForm.orderTypes.dineIn'),
+    'takeout': t('ticketForm.orderTypes.takeout'),
+    'delivery': t('ticketForm.orderTypes.delivery')
+  };
+  return translations[orderType] || orderType;
+}
+
+const generateQRCode = async (): Promise<void> => {
+  try {
+    const ticketUrl = `${window.location.origin}?ticket=${ticketNumber.value}&total=${total.value}`;
+    qrCodeDataURL.value = await QRCode.toDataURL(ticketUrl, {
+      width: 200,
+      margin: 2,
+    });
+  } catch (error) {
+    console.error('Error generating QR code:', error);
+    qrCodeDataURL.value = ''; // Ensure it's cleared on failure
+  }
+};
+
+const resetForm = (): void => {
+  showTicket.value = false;
   customerData.value = {
     name: '',
     email: '',
     phone: '',
     address: '',
-    orderType: ''
-  }
-  ticketNumber.value = ''
-  ticketDate.value = ''
-  ticketTime.value = ''
-  qrCodeDataURL.value = ''
-}
+    orderType: '',
+  };
+  ticketNumber.value = '';
+  ticketDate.value = '';
+  ticketTime.value = '';
+  qrCodeDataURL.value = '';
+};
 
-// Expose reset function to parent
+// Expose reset function to parent component
 defineExpose({
-  resetForm
-})
+  resetForm,
+});
 
-// Computed properties
-const total = computed(() => {
-  return props.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-})
 
-// Methods
-const handleCancel = () => {
+const handleCancel = (): void => {
   if (showTicket.value) {
-    // If showing ticket, go back to form
-    showTicket.value = false
+    // If showing ticket, go back to the form
+    showTicket.value = false;
   } else {
-    // If in form, emit back-to-cart or close
-    if (props.mobile) {
-      emit('back-to-cart')
-    } else {
-      emit('close')
-    }
+    // If on the form, emit back-to-cart (mobile) or close (desktop)
+    props.mobile ? emit('back-to-cart') : emit('close');
   }
-}
+};
 
-const handleBackToMenu = () => {
-  // Reset form and emit complete to go back to menu
-  resetForm()
-  emit('complete')
-}
+const handleBackToMenu = (): void => {
+  resetForm();
+  emit('complete'); // Signal completion to parent
+};
 
-const generateTicket = async () => {
-  // Generate ticket number and timestamp
-  ticketNumber.value = 'MCK' + Date.now().toString().slice(-6)
-  const now = new Date()
-  ticketDate.value = now.toLocaleDateString()
-  ticketTime.value = now.toLocaleTimeString()
-  
+const generateTicket = async (): Promise<void> => {
+  // Generate ticket details
+  ticketNumber.value = 'MCK' + Date.now().toString().slice(-6);
+  const now = new Date();
+  ticketDate.value = now.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  ticketTime.value = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
   // Generate QR code
-  await generateQRCode()
-  
-  // Emit ticket generated event with ticket data
+  await generateQRCode();
+
+  // Show the ticket view
+  showTicket.value = true;
+
+  // Emit ticket data to parent
   emit('ticket-generated', {
     ticketNumber: ticketNumber.value,
-    customerData: customerData.value,
+    customerData: { ...customerData.value }, // Send a copy
     cartItems: props.cartItems,
     total: total.value,
     date: ticketDate.value,
     time: ticketTime.value,
-    qrCodeDataURL: qrCodeDataURL.value
-  })
-  
-  // Show the ticket
-  showTicket.value = true
-}
+    qrCodeDataURL: qrCodeDataURL.value,
+  });
+};
 
-// Download ticket as PDF
+/*
+// --- OPTIONAL TICKET ACTIONS (Uncomment to enable) ---
+
 const downloadTicketPDF = async () => {
-  if (!ticketRef.value) return
+  if (!ticketRef.value) return;
   
-  try {
-    const canvas = await html2canvas(ticketRef.value, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true
-    })
-    
-    const imgData = canvas.toDataURL('image/png')
-    const pdf = new jsPDF('p', 'mm', 'a4')
-    
-    const imgWidth = 210
-    const pageHeight = 295
-    const imgHeight = (canvas.height * imgWidth) / canvas.width
-    let heightLeft = imgHeight
-    
-    let position = 0
-    
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-    heightLeft -= pageHeight
-    
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight
-      pdf.addPage()
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
-      heightLeft -= pageHeight
-    }
-    
-    pdf.save(`ticket-${ticketNumber.value}.pdf`)
-  } catch (error) {
-    console.error('Error generating PDF:', error)
-  }
-}
+  const canvas = await html2canvas(ticketRef.value, { scale: 2 });
+  const imgData = canvas.toDataURL('image/png');
+  
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'px',
+    format: [canvas.width, canvas.height]
+  });
 
-// Print ticket directly
+  pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+  pdf.save(`ticket-${ticketNumber.value}.pdf`);
+};
+
 const printTicket = () => {
-  if (!ticketRef.value) return
-  
-  const printWindow = window.open('', '_blank')
-  const ticketHTML = generateTicketHTML()
-  
-  printWindow.document.write(ticketHTML)
-  printWindow.document.close()
-  printWindow.focus()
-  printWindow.print()
-  printWindow.close()
-}
+  if (!ticketRef.value) return;
 
-// Generate complete HTML page for ticket
-const generateTicketHTML = () => {
-  const itemsHTML = props.cartItems.map(item => `
-    <tr>
-      <td>${item.name}</td>
-      <td>${item.quantity}</td>
-      <td>$${item.price.toFixed(2)}</td>
-      <td>$${(item.price * item.quantity).toFixed(2)}</td>
-    </tr>
-  `).join('')
-  
-  return `
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Ticket ${ticketNumber.value}</title>
-      <style>
-        @media print {
-          body { margin: 0; }
-          .no-print { display: none; }
-        }
-        body {
-          font-family: 'Courier New', monospace;
-          max-width: 300px;
-          margin: 0 auto;
-          padding: 20px;
-          background: white;
-        }
-        .header {
-          text-align: center;
-          border-bottom: 2px dashed #333;
-          padding-bottom: 10px;
-          margin-bottom: 15px;
-        }
-        .logo {
-          font-size: 24px;
-          font-weight: bold;
-          color: #FFC72C;
-          margin-bottom: 5px;
-        }
-        .ticket-info {
-          margin-bottom: 15px;
-          font-size: 12px;
-        }
-        .customer-info {
-          margin-bottom: 15px;
-          border-bottom: 1px dashed #333;
-          padding-bottom: 10px;
-        }
-        .items-table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-bottom: 15px;
-        }
-        .items-table th,
-        .items-table td {
-          text-align: left;
-          padding: 5px 2px;
-          font-size: 12px;
-        }
-        .items-table th {
-          border-bottom: 1px solid #333;
-        }
-        .total-section {
-          border-top: 2px solid #333;
-          padding-top: 10px;
-          text-align: right;
-          font-weight: bold;
-          font-size: 16px;
-        }
-        .qr-section {
-          text-align: center;
-          margin-top: 15px;
-          border-top: 1px dashed #333;
-          padding-top: 15px;
-        }
-        .footer {
-          text-align: center;
-          margin-top: 15px;
-          font-size: 10px;
-          color: #666;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <div class="logo">McDonald's</div>
-        <div>¡Gracias por su compra!</div>
-      </div>
-      
-      <div class="ticket-info">
-        <div><strong>Ticket:</strong> ${ticketNumber.value}</div>
-        <div><strong>Fecha:</strong> ${ticketDate.value}</div>
-        <div><strong>Hora:</strong> ${ticketTime.value}</div>
-        <div><strong>Tipo:</strong> ${getOrderTypeTranslation(customerData.value.orderType)}</div>
-      </div>
-      
-      <div class="customer-info">
-        <div><strong>Cliente:</strong> ${customerData.value.name}</div>
-        ${customerData.value.email ? `<div><strong>Email:</strong> ${customerData.value.email}</div>` : ''}
-        ${customerData.value.phone ? `<div><strong>Teléfono:</strong> ${customerData.value.phone}</div>` : ''}
-        ${customerData.value.address ? `<div><strong>Dirección:</strong> ${customerData.value.address}</div>` : ''}
-      </div>
-      
-      <table class="items-table">
-        <thead>
-          <tr>
-            <th>Producto</th>
-            <th>Cant.</th>
-            <th>Precio</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${itemsHTML}
-        </tbody>
-      </table>
-      
-      <div class="total-section">
-         Total: $${total.value.toFixed(2)}
-       </div>
-      
-      ${qrCodeDataURL.value ? `
-        <div class="qr-section">
-          <div>Código QR del ticket:</div>
-          <img src="${qrCodeDataURL.value}" alt="QR Code" style="margin-top: 10px;">
-        </div>
-      ` : ''}
-      
-      <div class="footer">
-        <div>¡Esperamos verte pronto!</div>
-        <div>www.mcdonalds.com</div>
-      </div>
-    </body>
-    </html>
-  `
-}
-
-// Open ticket in new window/tab
-const openTicketPage = () => {
-  const ticketHTML = generateTicketHTML()
-  const newWindow = window.open('', '_blank')
-  newWindow.document.write(ticketHTML)
-  newWindow.document.close()
-}
-
-const downloadTicket = () => {
-  // Create a simple text version of the ticket for download
-  const ticketContent = `
-MCDONALD'S RECEIPT
-==================
-Ticket #: ${ticketNumber.value}
-Date: ${ticketDate.value}
-Time: ${ticketTime.value}
-Order Type: ${customerData.value.orderType.replace('-', ' ')}
-
-CUSTOMER INFORMATION
-====================
-Name: ${customerData.value.name}
-Email: ${customerData.value.email}
-${customerData.value.phone ? `Phone: ${customerData.value.phone}` : ''}
-${customerData.value.address ? `Address: ${customerData.value.address}` : ''}
-
-ORDER DETAILS
-=============
-${props.cartItems.map(item => `${item.name} x${item.quantity} - $${(item.price * item.quantity).toFixed(2)}`).join('\n')}
-
-Total Amount: $${total.value.toFixed(2)}
-
-Thank you for choosing McDonald's!
-Please keep this receipt for your records.
-  `.trim()
-
-  // Create and download the file
-  const blob = new Blob([ticketContent], { type: 'text/plain' })
-  const url = window.URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `McDonald_Receipt_${ticketNumber.value}.txt`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  window.URL.revokeObjectURL(url)
-}
+  const printWindow = window.open('', '_blank');
+  if (printWindow) {
+    printWindow.document.write('<html><head><title>Print Ticket</title>');
+    // Optional: Add styles for printing
+    printWindow.document.write('<style> body { font-family: sans-serif; } </style>');
+    printWindow.document.write('</head><body>');
+    printWindow.document.write(ticketRef.value.innerHTML);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+  }
+};
+*/
 </script>

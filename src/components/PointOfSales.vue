@@ -1,3 +1,6 @@
+<!-- ======================================================= -->
+<!-- FILE 1: Main Application View (e.g., App.vue)           -->
+<!-- ======================================================= -->
 <template>
   <div class="max-h-dvh">
     <!-- Notification Component -->
@@ -72,7 +75,7 @@
       :is-visible="showTicketModal"
       :ticket-data="currentTicketData"
       @close="closeTicketModal"
-      @view-ticket="handleViewTicket"
+      @view-ticket="(payload) => handleViewTicket(payload as TicketData)"
       @continue-shopping="handleContinueShopping"
     />
 
@@ -81,7 +84,7 @@
       <TicketForm
         :cart-items="cart"
         :mobile="true"
-        @ticket-generated="handleTicketGenerated"
+        @ticket-generated="(payload) => handleTicketGenerated(payload as TicketData)"
         @back-to-cart="closeMobileTicketForm"
         ref="mobileTicketFormRef"
       />
@@ -93,7 +96,7 @@
         <TicketForm
           :cart-items="cart"
           :mobile="false"
-          @ticket-generated="handleTicketGenerated"
+          @ticket-generated="(payload) => handleTicketGenerated(payload as TicketData)"
           @back-to-cart="closeDesktopTicketForm"
           ref="desktopTicketFormRef"
         />
@@ -155,54 +158,58 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { changeLanguage, getCurrentLanguage } from '../utils/i18n.js'
-import NavigationContainer from './navigation/NavigationContainer.vue'
-import ProductCard from './products/ProductCard.vue'
-import OrderSummary from './OrderSummary.vue'
+import { getCurrentLanguage } from '../utils/i18n.js'
 import TicketForm from './ticket/TicketForm.vue'
 import DesktopLayout from './navigation/DesktopLayout.vue'
 import MobileLayout from './navigation/MobileLayout.vue'
 import NotificationComponent from './NotificationComponent.vue'
-import LanguageSwitcher from './navigation/LanguageSwitcher.vue'
 import TicketOptionsModal from './ticket/TicketOptionsModal.vue'
-import { emitter } from '../utils/Emitter'
 import MainForm from './Forms/MainForm.vue'
 import '@litcomponents/dialog.js'
 import '@litcomponents/CInput.js'
+import { seedData, type Product } from '@/utils/productStore.js'
+
+// --- Type Definitions ---
+interface CartItem extends Product {
+  quantity: number;
+}
+interface CustomerData {
+  name: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  orderType: 'dine-in' | 'takeout' | 'delivery' | '';
+}
+interface TicketData {
+  ticketNumber: string;
+  customerData: CustomerData;
+  cartItems: CartItem[];
+  total: number;
+  date: string;
+  time: string;
+  qrCodeDataURL: string;
+}
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+}
+interface NavItem {
+  id: string;
+  icon: string;
+  label: string;
+  active: boolean;
+}
+
 // i18n setup
 const { t } = useI18n()
 const showProductsModal = ref(false)
-// Food data with proper image URLs and fallbacks
-const foodData = {
-  burgers: [
-    { id: 1, name: "Quarter Pounder With Cheese", price: 3.99, image: "/images/quarter-pounder-cheese.svg", fallback: "🍔" },
-    { id: 2, name: "Double Quarter Pounder With Cheese", price: 4.79, image: "/images/double-quarter-pounder.jpg", fallback: "🍔" },
-    { id: 3, name: "Quarter Pounder With Cheese Deluxe", price: 4.29, image: "/images/quarter-pounder-deluxe.jpg", fallback: "🍔" },
-    { id: 4, name: "Big Mac", price: 3.99, image: "/images/big-mac.jpg", fallback: "🍔" },
-    { id: 5, name: "McDouble", price: 1.99, image: "/images/mcdouble.jpg", fallback: "🍔" },
-    { id: 6, name: "Quarter Pounder With Cheese Bacon", price: 4.99, image: "/images/quarter-pounder-bacon.jpg", fallback: "🍔" }
-  ],
-  sandwiches: [
-    { id: 7, name: "Chicken Sandwich", price: 4.49, image: "/images/chicken-sandwich.jpg", fallback: "🥪" },
-    { id: 8, name: "Fish Sandwich", price: 3.79, image: "/images/fish-sandwich.jpg", fallback: "🥪" }
-  ],
-  sides: [
-    { id: 9, name: "Large Fries", price: 2.99, image: "/images/large-fries.svg", fallback: "🍟" },
-    { id: 10, name: "Medium Fries", price: 2.49, image: "/images/medium-fries.jpg", fallback: "🍟" },
-    { id: 11, name: "Small Fries", price: 1.99, image: "/images/small-fries.jpg", fallback: "🍟" }
-  ],
-  drinks: [
-    { id: 12, name: "Medium Soda", price: 1.99, image: "/images/medium-soda.svg", fallback: "🥤" },
-    { id: 13, name: "Large Soda", price: 2.29, image: "/images/large-soda.jpg", fallback: "🥤" },
-    { id: 14, name: "M&Ms McFlurry", price: 3.99, image: "/images/mcflurry.jpg", fallback: "🍦" }
-  ]
-}
 
 // Categories configuration with i18n
-const categories = computed(() => [
+const categories = computed<Category[]>(() => [
   { id: 'meals', name: t('categories.meals'), icon: 'restaurant' },
   { id: 'burgers', name: t('categories.burgers'), icon: 'lunch_dining' },
   { id: 'sandwiches', name: t('categories.sandwiches'), icon: 'fastfood' },
@@ -211,19 +218,18 @@ const categories = computed(() => [
 ])
 
 // Reactive state
-const currentCategory = ref('burgers')
-const cart = ref([])
-const searchQuery = ref('')
-const currentMobileView = ref('menu') // 'menu', 'cart'
-const showMobileTicketForm = ref(false) // For mobile full-screen ticket form
-const showDesktopTicketForm = ref(false) // For desktop modal ticket form
-const currentLanguage = ref(getCurrentLanguage())
-const showLanguageDropdown = ref(false)
-const showTicketModal = ref(false)
-const currentTicketData = ref(null)
-const showTicketViewer = ref(false)
-const mobileTicketFormRef = ref(null)
-const desktopTicketFormRef = ref(null)
+const currentCategory = ref<string>('burgers')
+const cart = ref<CartItem[]>([])
+const searchQuery = ref<string>('')
+const currentMobileView = ref<'menu' | 'cart'>('menu')
+const showMobileTicketForm = ref<boolean>(false)
+const showDesktopTicketForm = ref<boolean>(false)
+const showLanguageDropdown = ref<boolean>(false)
+const showTicketModal = ref<boolean>(false)
+const currentTicketData = ref<TicketData | null>(null)
+const showTicketViewer = ref<boolean>(false)
+const mobileTicketFormRef = ref<InstanceType<typeof TicketForm> | null>(null)
+const desktopTicketFormRef = ref<InstanceType<typeof TicketForm> | null>(null)
 const urlTicketData = ref({
   ticket: '',
   date: '',
@@ -233,17 +239,17 @@ const urlTicketData = ref({
 })
 
 // Viewport tracking for modal management
-const isDesktop = ref(window.innerWidth >= 768)
-const resizeListener = ref(null)
-
-
+const isDesktop = ref<boolean>(window.innerWidth >= 768)
+const resizeListener = ref<(() => void) | null>(null)
+const allProducts = ref<Product[]>([])
+const productsByCategory = ref<Record<string, Product[]>>({})
 
 // Computed properties
-const currentProducts = computed(() => {
-  return foodData[currentCategory.value] || []
+const currentProducts = computed<Product[]>(() => {
+  return productsByCategory.value[currentCategory.value] || []
 })
 
-const filteredProducts = computed(() => {
+const filteredProducts = computed<Product[]>(() => {
   if (!searchQuery.value) {
     return currentProducts.value
   }
@@ -255,12 +261,12 @@ const filteredProducts = computed(() => {
   )
 })
 
-const cartItemCount = computed(() => {
+const cartItemCount = computed<number>(() => {
   return cart.value.reduce((total, item) => total + item.quantity, 0)
 })
 
 // Category navigation items for SidebarNav
-const categoryNavItems = computed(() => {
+const categoryNavItems = computed<NavItem[]>(() => {
   return categories.value.map(category => ({
     id: category.id,
     icon: category.icon,
@@ -270,25 +276,24 @@ const categoryNavItems = computed(() => {
 })
 
 // Methods
-const handleCategoryChange = (categoryId) => {
+const handleCategoryChange = (categoryId: string) => {
   currentCategory.value = categoryId
   searchQuery.value = '' // Clear search when changing category
 }
 
-// Handler for SidebarNav category selection
-const handleCategoryNavClick = (item) => {
+const handleCategoryNavClick = (item: { id: string }) => {
   handleCategoryChange(item.id)
 }
 
-const handleSearch = (query) => {
+const handleSearch = (query: string) => {
   searchQuery.value = query
 }
 
-const addToCart = (productId) => {
-  const product = Object.values(foodData).flat().find(p => p.id === productId)
+const addToCart = (productId: string) => {
+  const product = allProducts.value.find(p => String(p.id) === String(productId))
   if (!product) return
 
-  const existingItem = cart.value.find(item => item.id === productId)
+  const existingItem = cart.value.find(item => String(item.id) === String(productId))
   if (existingItem) {
     existingItem.quantity += 1
   } else {
@@ -296,8 +301,8 @@ const addToCart = (productId) => {
   }
 }
 
-const updateQuantity = (productId, newQuantity) => {
-  const item = cart.value.find(item => item.id === productId)
+const updateQuantity = (productId: string, newQuantity: number) => {
+  const item = cart.value.find(item => String(item.id) === String(productId))
   if (item) {
     if (newQuantity <= 0) {
       removeFromCart(productId)
@@ -307,8 +312,8 @@ const updateQuantity = (productId, newQuantity) => {
   }
 }
 
-const removeFromCart = (productId) => {
-  const itemIndex = cart.value.findIndex(item => item.id === productId)
+const removeFromCart = (productId: string) => {
+  const itemIndex = cart.value.findIndex(item => String(item.id) === String(productId))
   if (itemIndex > -1) {
     cart.value.splice(itemIndex, 1)
   }
@@ -324,28 +329,21 @@ const processPayment = () => {
     return
   }
   
-  // Navigate to ticket generation
-  if (window.innerWidth >= 768) { // Desktop
-    // En desktop, ahora mostramos el modal del formulario primero
+  if (window.innerWidth >= 768) {
     showDesktopTicketForm.value = true
-    // Reset form data when opening
     if (desktopTicketFormRef.value) {
       desktopTicketFormRef.value.resetForm()
     }
-  } else { // Mobile
-    // For mobile, show full-screen ticket form
+  } else {
     showMobileTicketForm.value = true
-    // Reset form data when opening
     if (mobileTicketFormRef.value) {
       mobileTicketFormRef.value.resetForm()
     }
   }
 }
 
-
 const closeMobileTicketForm = () => {
   showMobileTicketForm.value = false
-  // Reset form when closing
   if (mobileTicketFormRef.value) {
     mobileTicketFormRef.value.resetForm()
   }
@@ -355,38 +353,29 @@ const closeDesktopTicketForm = () => {
   showDesktopTicketForm.value = false
 }
 
-
-
-const handleTicketGenerated = (ticketData) => {
-  // Handle successful ticket generation
+const handleTicketGenerated = (ticketData: TicketData) => {
   console.log('Ticket generated:', ticketData)
   
-  // Store ticket data for the modal FIRST
   currentTicketData.value = {
     ...ticketData,
-    cartItems: ticketData.cartItems || [...cart.value], // Use provided cart items or current cart
+    cartItems: ticketData.cartItems || [...cart.value],
     customerData: ticketData.customerData
   }
   
-  // Show the ticket options modal BEFORE clearing data
   showTicketModal.value = true
   
-  // Close mobile ticket form if open
   if (showMobileTicketForm.value) {
     showMobileTicketForm.value = false
   }
   
-  // Close desktop ticket form if open
   if (showDesktopTicketForm.value) {
     showDesktopTicketForm.value = false
   }
   
-  // Navigate back to menu on mobile but keep the modal open
   if (window.innerWidth < 768) {
     handleMobileTabClick('menu')
   }
   
-  // Clear cart AFTER showing the modal
   clearCart()
 }
 
@@ -395,36 +384,31 @@ const closeTicketModal = () => {
   currentTicketData.value = null
 }
 
-const handleViewTicket = (ticketData) => {
-  // Handle viewing the full ticket
+const handleViewTicket = (ticketData: TicketData) => {
   console.log('View ticket:', ticketData)
   closeTicketModal()
 }
 
 const handleContinueShopping = () => {
-  // Handle continue shopping action
   closeTicketModal()
-  // Navigate to menu view
   if (window.innerWidth < 768) {
     handleMobileTabClick('menu')
   }
 }
-const getCurrentCategoryName = () => {
+
+const getCurrentCategoryName = (): string => {
   const category = categories.value.find(cat => cat.id === currentCategory.value)
   return category ? category.name : t('navigation.menu')
 }
 
-const handleMobileTabClick = (tabName) => {
-  // Prevent unnecessary re-renders if already on the same tab
+const handleMobileTabClick = (tabName: 'menu' | 'cart') => {
   if (currentMobileView.value === tabName) {
     return
   }
   
-  // Handle special cases for tab switching
   switch (tabName) {
     case 'menu':
       currentMobileView.value = 'menu'
-      // If no category is selected, default to burgers
       if (!currentCategory.value) {
         currentCategory.value = 'burgers'
       }
@@ -433,14 +417,10 @@ const handleMobileTabClick = (tabName) => {
     case 'cart':
       currentMobileView.value = 'cart'
       break
-      
-    default:
-      currentMobileView.value = tabName
   }
 }
 
-// Parse URL parameters for ticket viewing
-const parseTicketFromURL = () => {
+const parseTicketFromURL = (): boolean => {
   const urlParams = new URLSearchParams(window.location.search)
   const ticket = urlParams.get('ticket')
   
@@ -458,21 +438,17 @@ const parseTicketFromURL = () => {
   return false
 }
 
-// Close ticket viewer and return to normal app
 const closeTicketViewer = () => {
   showTicketViewer.value = false
-  // Clear URL parameters
-  const url = new URL(window.location)
+  const url = new URL(window.location.toString())
   url.search = ''
   window.history.replaceState({}, '', url)
 }
 
-// Function to close all modals
 const closeAllModals = () => {
   showMobileTicketForm.value = false
   showDesktopTicketForm.value = false
   showTicketModal.value = false
-  // Reset form data when closing
   if (mobileTicketFormRef.value) {
     mobileTicketFormRef.value.resetForm()
   }
@@ -481,11 +457,9 @@ const closeAllModals = () => {
   }
 }
 
-// Handle viewport changes
 const handleViewportChange = () => {
   const newIsDesktop = window.innerWidth >= 768
   
-  // If viewport changed and any modal is open, close all modals
   if (newIsDesktop !== isDesktop.value) {
     if (showMobileTicketForm.value || showDesktopTicketForm.value || showTicketModal.value) {
       closeAllModals()
@@ -494,22 +468,20 @@ const handleViewportChange = () => {
   }
 }
 
-// Check for ticket parameters on mount
 onMounted(() => {
+  // Populate products
+  productsByCategory.value = seedData;
+  allProducts.value = Object.values(seedData).flat();
+
   parseTicketFromURL()
   showProductsModal.value = true
-  // Add resize listener to handle viewport changes
   resizeListener.value = handleViewportChange
   window.addEventListener('resize', resizeListener.value)
 })
 
-// Cleanup on unmount
 onUnmounted(() => {
   if (resizeListener.value) {
     window.removeEventListener('resize', resizeListener.value)
   }
 })
-
-
-
 </script>

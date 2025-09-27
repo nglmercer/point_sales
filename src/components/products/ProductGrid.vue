@@ -1,3 +1,4 @@
+    
 <template>
   <div class="w-full">
     <!-- Category Header -->
@@ -24,23 +25,33 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import ProductCard from './ProductCard.vue'
 
-defineProps({
-  products: {
-    type: Array,
-    required: true
-  },
-  categoryName: {
-    type: String,
-    required: true
-  },
-  mobile: {
-    type: Boolean,
-    default: false
-  }
-})
 
-defineEmits(['add-to-cart'])
+// Or define the type inline if you don't have a shared types file:
+interface Product {
+  id: string | number;
+  name: string;
+  price: number;
+  image: string;
+  fallback?: string;
+}
+
+
+interface Props {
+  products: Product[];
+  categoryName: string;
+  mobile?: boolean;
+}
+
+withDefaults(defineProps<Props>(), {
+  mobile: false
+});
+
+defineEmits<{
+  (e: 'add-to-cart', id: string | number): void
+}>();
 </script>
+
+  
