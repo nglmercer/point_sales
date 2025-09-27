@@ -146,15 +146,7 @@
       @ticket-generated="handleTicketGenerated"
       @category-nav-click="handleCategoryNavClick"
     />
-    <dlg-cont class="productsModal" :visible="showProductsModal">
-      <MainForm
-        :form-id="'productsForm'"
-        :title="t('ticketForm.products')"
-        :description="t('ticketForm.productsDescription')"
-        :darkmode="true"
-        ref="mainFormRef"
-      />
-    </dlg-cont>
+                        
   </div>
 </template>
 
@@ -178,7 +170,7 @@ interface CartItem extends DBProduct {
 }
 interface CustomerData {
   name: string;
-  email: string;
+  dni: string;
   phone?: string;
   address?: string;
   orderType: 'dine-in' | 'takeout' | 'delivery' | '';
@@ -206,7 +198,6 @@ interface NavItem {
 
 // i18n setup
 const { t } = useI18n()
-const showProductsModal = ref(false)
 
 // Categories configuration with i18n
 const categories = computed<Category[]>(() => [
@@ -506,7 +497,6 @@ onMounted(async () => {
   allProducts.value = Object.values(seedData).flat();
 
   parseTicketFromURL()
-  showProductsModal.value = true
   resizeListener.value = handleViewportChange
   window.addEventListener('resize', resizeListener.value)
 })

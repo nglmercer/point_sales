@@ -61,9 +61,9 @@
                 <span class="font-medium text-gray-700">{{ t('ticketModal.customer') }}:</span>
                 <div>{{ ticketData.customerData.name }}</div>
               </div>
-              <div v-if="ticketData.customerData.email">
-                <span class="font-medium text-gray-700">{{ t('ticketModal.email') }}:</span>
-                <div>{{ ticketData.customerData.email }}</div>
+              <div v-if="ticketData.customerData.dni">
+                <span class="font-medium text-gray-700">{{ t('ticketModal.dni') }}:</span>
+                <div>{{ ticketData.customerData.dni }}</div>
               </div>
             </div>
           </div>
@@ -106,7 +106,7 @@ import QRCode from 'qrcode';
 
 interface CustomerData {
   name: string;
-  email: string;
+  dni: string;
 }
 
 interface TicketData {

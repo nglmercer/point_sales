@@ -40,18 +40,18 @@
             />
           </div>
 
-          <!-- Email -->
+          <!-- DNI -->
           <div>
-            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-              {{ t('ticketForm.emailRequired') }}
+            <label for="dni" class="block text-sm font-medium text-gray-700 mb-1">
+              {{ t('ticketForm.dniRequired') }}
             </label>
             <input
-              id="email"
-              v-model="customerData.email"
-              type="email"
+              id="dni"
+              v-model="customerData.dni"
+              type="text"
               required
               :class="mobile ? 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm' : 'w-full px-3 py-2 border border-gray-300 rounded-md'"
-              :placeholder="t('ticketForm.placeholders.email')"
+              :placeholder="t('ticketForm.placeholders.dni')"
             />
           </div>
 
@@ -97,7 +97,6 @@
               <option value="" disabled>{{ t('ticketForm.selectOrderType') }}</option>
               <option value="dine-in">{{ t('ticketForm.dineIn') }}</option>
               <option value="takeout">{{ t('ticketForm.takeout') }}</option>
-              <option value="delivery">{{ t('ticketForm.delivery') }}</option>
             </select>
           </div>
 
@@ -161,7 +160,7 @@
             <h3 class="font-medium mb-2">{{ t('ticketForm.customerInformation') }}</h3>
             <div class="space-y-1 text-sm">
               <div><span class="font-medium">{{ t('ticketForm.name') }}</span> {{ customerData.name }}</div>
-              <div><span class="font-medium">{{ t('ticketForm.email') }}</span> {{ customerData.email }}</div>
+              <div><span class="font-medium">{{ t('ticketForm.dni') }}</span> {{ customerData.dni }}</div>
               <div v-if="customerData.phone"><span class="font-medium">{{ t('ticketForm.phone') }}</span> {{ customerData.phone }}</div>
               <div v-if="customerData.address"><span class="font-medium">{{ t('ticketForm.address') }}:</span> {{ customerData.address }}</div>
             </div>
@@ -238,7 +237,7 @@ type OrderType = 'dine-in' | 'takeout' | 'delivery';
 
 interface CustomerData {
   name: string;
-  email: string;
+  dni: string;
   phone: string;
   address: string;
   orderType: OrderType | ''; // Allow empty string for initial state
@@ -282,7 +281,7 @@ const { t } = useI18n();
 const showTicket = ref<boolean>(false);
 const customerData = ref<CustomerData>({
   name: '',
-  email: '',
+  dni: '',
   phone: '',
   address: '',
   orderType: '',
@@ -331,7 +330,7 @@ const resetForm = (): void => {
   showTicket.value = false;
   customerData.value = {
     name: '',
-    email: '',
+    dni: '',
     phone: '',
     address: '',
     orderType: '',

@@ -69,6 +69,7 @@
     "fullNameRequired": "Full Name *",
     "emailAddress": "Email Address",
     "emailRequired": "Email Address *",
+    "dniRequired": "DNI *",
     "phoneNumber": "Phone Number",
     "address": "Address",
     "orderType": "Order Type",
@@ -87,6 +88,7 @@
     "time": "Time:",
     "customerInformation": "Customer Information",
     "name": "Name:",
+    "dni": "DNI:",
     "email": "Email:",
     "phone": "Phone:",
     "orderDetails": "Order Details",
@@ -109,6 +111,7 @@
     "placeholders": {
       "fullName": "Enter your full name",
       "email": "Enter your email",
+      "dni": "Enter your DNI",
       "phone": "Enter your phone number",
       "address": "Enter your address (optional)"
     },
@@ -136,6 +139,8 @@
     "downloadPDF": "Download PDF",
     "downloadText": "Download Text File",
     "emailTicket": "Email Ticket",
+    "dni": "DNI",
+    "customer": "Customer",
     "continueShopping": "Continue Shopping",
     "printSuccess": "Ticket sent to printer",
     "downloadSuccess": "File downloaded successfully",
