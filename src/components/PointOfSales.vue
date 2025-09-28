@@ -151,7 +151,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref,toRaw, computed, onMounted, onUnmounted } from 'vue'
+import { prepareForIndexedDB, cleanReactiveObject, serializeTicketData } from '@/utils/vueUtils'
 import { useI18n } from 'vue-i18n'
 import { getCurrentLanguage } from '../utils/i18n.js'
 import TicketForm from './ticket/TicketForm.vue'
@@ -162,9 +163,8 @@ import TicketOptionsModal from './ticket/TicketOptionsModal.vue'
 import MainForm from './Forms/MainForm.vue'
 import '@litcomponents/dialog.js'
 import '@litcomponents/CInput.js'
-import { dbManager, type Product as DBProduct,seedData,initializeDatabase } from '@/utils/StoreManager.js'
-import type{ CartItem,CustomerData,TicketData, } from '@/utils/ticketStore.js'
-import { ticketDBManager } from '@/utils/ticketStore.js'
+import { productService, seedData,initializeDatabase,ticketService } from '@/utils/StoreManager.js'
+import type{ CartItem,CustomerData,TicketData,Product as DBProduct, } from '@/utils/StoreManager.js'
 
 // --- Type Definitions ---
 interface Category {
@@ -223,7 +223,7 @@ const currentProducts = computed<DBProduct[]>(() => {
 })
 const loadProductsFromDB = async () => {
   try {
-    const products = await dbManager.getAll() as DBProduct[];
+    const products = await productService.getAllProducts() as DBProduct[];
     allProducts.value = products;
 
     // Agrupar productos por categoría
@@ -355,21 +355,39 @@ const closeDesktopTicketForm = () => {
   showDesktopTicketForm.value = false
 }
 
-const handleTicketGenerated =async (ticketData: TicketData) => {
+const handleTicketGenerated = async (ticketData: TicketData) => {
+  // Convert reactive objects to plain objects using toRaw
+  const cleanTicketData = serializeTicketData({
+    ...ticketData,
+    cartItems: ticketData.cartItems || cart.value,
+    customerData: ticketData.customerData
+  })
   
   currentTicketData.value = {
-    ...ticketData,
-    cartItems: ticketData.cartItems || [...cart.value],
-    customerData: ticketData.customerData
+    ...cleanTicketData,
+    cartItems: cleanTicketData.cartItems,
+    customerData: cleanTicketData.customerData
   }
-  const { qrCodeDataURL, ...alldata } = ticketData
-  console.log('Ticket generated:', alldata)
-  await ticketDBManager.openDatabase()
-  await ticketDBManager.add({
-    ...alldata,
-    customerData: JSON.stringify(alldata.customerData),
-    cartItems: JSON.stringify(alldata.cartItems)
-  })
+  
+  const { qrCodeDataURL, ...dataToSave } = cleanTicketData
+  console.log('Ticket generated:', dataToSave, { ...dataToSave, id: dataToSave.ticketID })
+  
+  try {
+    const result = await ticketService.saveTicket({ 
+      ...dataToSave, 
+      id: dataToSave.ticketID,
+      cartItems:cleanTicketData.cartItems
+    });
+    
+    if (result) {
+      console.log('Ticket saved successfully:', result);
+    } else {
+      console.error('Failed to save ticket');
+    }
+  } catch (error) {
+    console.error('Error saving ticket:', error);
+  }
+
   showTicketModal.value = true
   
   if (showMobileTicketForm.value) {
@@ -479,12 +497,13 @@ const handleViewportChange = () => {
 onMounted(async () => {
   await initializeDatabase();
   await loadProductsFromDB();
-  const initalData = await dbManager.getAll()
+  const initalData = await productService.getAllProducts()
   handleDatabaseUpdate(initalData);
-  dbManager.on('add', handleDatabaseUpdate);
-  dbManager.on('update', handleDatabaseUpdate);
-  dbManager.on('delete', handleDatabaseUpdate);
-  dbManager.on('clear', handleDatabaseUpdate); // También es bueno escuchar el evento de limpiar
+  const manager = await productService.getManager();
+  manager.on('add', handleDatabaseUpdate);
+  manager.on('update', handleDatabaseUpdate);
+  manager.on('delete', handleDatabaseUpdate);
+  manager.on('clear', handleDatabaseUpdate); // También es bueno escuchar el evento de limpiar
   // Populate products
   productsByCategory.value = seedData;
   allProducts.value = Object.values(seedData).flat();
@@ -494,11 +513,12 @@ onMounted(async () => {
   window.addEventListener('resize', resizeListener.value)
 })
 
-onUnmounted(() => {
-  dbManager.off('add', handleDatabaseUpdate);
-  dbManager.off('update', handleDatabaseUpdate);
-  dbManager.off('delete', handleDatabaseUpdate);
-  dbManager.off('clear', handleDatabaseUpdate);
+onUnmounted(async () => {
+  const manager = await productService.getManager();
+  manager.off('add', handleDatabaseUpdate);
+  manager.off('update', handleDatabaseUpdate);
+  manager.off('delete', handleDatabaseUpdate);
+  manager.off('clear', handleDatabaseUpdate);
   
   if (resizeListener.value) {
     window.removeEventListener('resize', resizeListener.value)

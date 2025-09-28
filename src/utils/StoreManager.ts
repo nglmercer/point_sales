@@ -1,7 +1,6 @@
 // src/utils/storeManager.js
 import { IndexedDBManager, type DatabaseSchema } from "idb-manager";
 import type { DatabaseItem } from "idb-manager";
-// Define the complete database schema with multiple stores
 const pointSalesSchema: DatabaseSchema = {
   name: 'PointSales',
   version: 2,
@@ -18,23 +17,25 @@ const pointSalesSchema: DatabaseSchema = {
     },
     {
       name: 'tickets',
-      keyPath: 'ticketID',
+      keyPath: 'id',
       autoIncrement: false,
       indexes: [
         { name: 'customerName', keyPath: 'customerData.name', unique: false },
         { name: 'customerDni', keyPath: 'customerData.dni', unique: false },
         { name: 'date', keyPath: 'date', unique: false },
         { name: 'orderType', keyPath: 'customerData.orderType', unique: false },
-        { name: 'total', keyPath: 'total', unique: false }
+        { name: 'total', keyPath: 'total', unique: false },
+        { name: 'ticketID', keyPath: 'ticketID', unique: true }
       ]
     },
     {
       name: 'customers',
-      keyPath: 'dni',
+      keyPath: 'id',
       autoIncrement: false,
       indexes: [
         { name: 'name', keyPath: 'name', unique: false },
-        { name: 'phone', keyPath: 'phone', unique: false }
+        { name: 'phone', keyPath: 'phone', unique: false },
+        { name: 'dni', keyPath: 'dni', unique: true }
       ]
     }
   ]
@@ -65,18 +66,18 @@ export interface CustomerData extends DatabaseItem {
   name: string;
   phone?: string;
   address?: string;
-  orderType: 'dine-in' | 'takeout' | 'delivery' | '';
+  orderType?: 'dine-in' | 'takeout' | 'delivery' | '';
 }
 
 // Ticket data interface
 export interface TicketData extends DatabaseItem {
   ticketID: string;
   customerData: CustomerData;
-  cartItems: CartItem[];
+  cartItems: CartItem[] | string;
   total: number;
   date: string;
   time: string;
-  qrCodeDataURL: string;
+  qrCodeDataURL?: string;
 }
 
 // Seed data
@@ -127,7 +128,12 @@ async function initializeDatabase() {
     console.log("Products store already contains data, skipping seed.");
   }
   
-  return manager;
+  return {
+    productStore,
+    ticketStore,
+    customerStore,
+    manager
+  }
 }
 
 /**
@@ -229,8 +235,8 @@ export class TicketService {
   
   async getTicketsByOrderType(orderType: string): Promise<TicketData[]> {
     const manager = await this.getManager();
-    const searchResult = await manager.store('tickets').search({ 'customerData.orderType': orderType });
-    return searchResult.items as TicketData[];
+    const allTickets = await this.getAllTickets();
+    return allTickets.filter(ticket => ticket.customerData?.orderType === orderType);
   }
   
   async updateTicket(ticket: TicketData): Promise<TicketData | null> {

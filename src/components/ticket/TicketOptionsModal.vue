@@ -97,7 +97,7 @@
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import QRCode from 'qrcode';
-import type{ CustomerData,TicketData } from '@/utils/ticketStore';
+import type{ CustomerData,TicketData } from '@/utils/StoreManager.js'
 // To enable the functions below, you may need to install type definitions:
 // npm install --save-dev @types/jspdf @types/html2canvas
 // import jsPDF from 'jspdf';

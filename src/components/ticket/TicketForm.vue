@@ -86,17 +86,17 @@
           <!-- Order Type -->
           <div>
             <label for="orderType" class="block text-sm font-medium text-gray-700 mb-1">
-              {{ t('ticketForm.orderTypeRequired') }}
+              {{ t('ticketForm.orderType') }}
             </label>
             <select
               id="orderType"
               v-model="customerData.orderType"
-              required
               :class="mobile ? 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm' : 'w-full px-3 py-2 border border-gray-300 rounded-md'"
             >
-              <option value="" disabled>{{ t('ticketForm.selectOrderType') }}</option>
+              <option value="">{{ t('ticketForm.selectOrderType') }}</option>
               <option value="dine-in">{{ t('ticketForm.dineIn') }}</option>
               <option value="takeout">{{ t('ticketForm.takeout') }}</option>
+              <option value="delivery">{{ t('ticketForm.delivery') }}</option>
             </select>
           </div>
 
@@ -238,9 +238,9 @@ type OrderType = 'dine-in' | 'takeout' | 'delivery';
 interface CustomerData {
   name: string;
   dni: string;
-  phone: string;
-  address: string;
-  orderType: OrderType | ''; // Allow empty string for initial state
+  phone?: string;
+  address?: string;
+  orderType?: OrderType | ''; // Allow empty string for initial state
 }
 
 interface TicketData {
@@ -303,7 +303,7 @@ const total = computed<number>(() => {
 
 // --- METHODS ---
 
-const getOrderTypeTranslation = (orderType: OrderType | ''): string => {
+const getOrderTypeTranslation = (orderType: OrderType | '' =''): string => {
   if (!orderType) return '';
   const translations: Record<OrderType, string> = {
     'dine-in': t('ticketForm.orderTypes.dineIn'),
