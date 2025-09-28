@@ -15,7 +15,7 @@
     "astro": "^5.13.7",
     "daisyui": "^5.1.12",
     "html2canvas": "^1.4.1",
-    "idb-manager": "^1.0.5",
+    "idb-manager": "^1.1.1",
     "jspdf": "^3.0.3",
     "lit": "^3.3.1",
     "qrcode": "^1.5.4",

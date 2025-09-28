@@ -138,8 +138,8 @@
           <!-- Ticket Info -->
           <div class="space-y-2 text-sm">
             <div class="flex justify-between">
-              <span class="font-medium">{{ t('ticketForm.ticketNumber') }}</span>
-              <span>{{ ticketNumber }}</span>
+              <span class="font-medium">{{ t('ticketForm.ticketID') }}</span>
+              <span>{{ ticketID }}</span>
             </div>
             <div class="flex justify-between">
               <span class="font-medium">{{ t('ticketForm.date') }}</span>
@@ -244,7 +244,7 @@ interface CustomerData {
 }
 
 interface TicketData {
-  ticketNumber: string;
+  ticketID: string;
   customerData: CustomerData;
   cartItems: CartItem[];
   total: number;
@@ -287,7 +287,7 @@ const customerData = ref<CustomerData>({
   orderType: '',
 });
 
-const ticketNumber = ref<string>('');
+const ticketID = ref<string>('');
 const ticketDate = ref<string>('');
 const ticketTime = ref<string>('');
 const qrCodeDataURL = ref<string>('');
@@ -315,7 +315,7 @@ const getOrderTypeTranslation = (orderType: OrderType | ''): string => {
 
 const generateQRCode = async (): Promise<void> => {
   try {
-    const ticketUrl = `${window.location.origin}?ticket=${ticketNumber.value}&total=${total.value}`;
+    const ticketUrl = `${window.location.origin}?ticket=${ticketID.value}&total=${total.value}`;
     qrCodeDataURL.value = await QRCode.toDataURL(ticketUrl, {
       width: 200,
       margin: 2,
@@ -335,7 +335,7 @@ const resetForm = (): void => {
     address: '',
     orderType: '',
   };
-  ticketNumber.value = '';
+  ticketID.value = '';
   ticketDate.value = '';
   ticketTime.value = '';
   qrCodeDataURL.value = '';
@@ -364,7 +364,7 @@ const handleBackToMenu = (): void => {
 
 const generateTicket = async (): Promise<void> => {
   // Generate ticket details
-  ticketNumber.value = 'MCK' + Date.now().toString().slice(-6);
+  ticketID.value = 'MCK' + Date.now().toString().slice(-6);
   const now = new Date();
   ticketDate.value = now.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
   ticketTime.value = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
@@ -377,7 +377,7 @@ const generateTicket = async (): Promise<void> => {
 
   // Emit ticket data to parent
   emit('ticket-generated', {
-    ticketNumber: ticketNumber.value,
+    ticketID: ticketID.value,
     customerData: { ...customerData.value }, // Send a copy
     cartItems: props.cartItems,
     total: total.value,
@@ -403,7 +403,7 @@ const downloadTicketPDF = async () => {
   });
 
   pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-  pdf.save(`ticket-${ticketNumber.value}.pdf`);
+  pdf.save(`ticket-${ticketID.value}.pdf`);
 };
 
 const printTicket = () => {

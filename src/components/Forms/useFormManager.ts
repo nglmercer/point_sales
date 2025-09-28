@@ -1,7 +1,7 @@
-import { ref, reactive, computed, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref,toRaw , reactive, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import type { FormData, FormConfig } from '@/utils/form-config'
 import { defaultProductFormConfig, defaultProductData } from '@/utils/form-config'
-import { dbManager, type Product,dbConfig } from '@/utils/productStore'
+import { dbManager, type Product } from '@/utils/StoreManager'
 export interface UseFormManagerOptions {
   formId: string
   initialData?: FormData
@@ -10,7 +10,15 @@ export interface UseFormManagerOptions {
   onReset?: () => void
   onChange?: (fieldName: string, value: any, formData: FormData) => void
 }
-
+function isValueEmpty(value: any): boolean {
+  if (value === null || value === undefined) {
+    return true;
+  }
+  if (typeof value === 'string' && value.trim() === '') {
+    return true;
+  }
+  return false;
+}
 export function useFormManager(options: UseFormManagerOptions) {
   const {
     formId,
@@ -119,40 +127,57 @@ export function useFormManager(options: UseFormManagerOptions) {
 
   // Función para validar un campo
   function validateField(fieldName: string): boolean {
-    const fieldConfig = formConfig[fieldName]
-    if (!fieldConfig) return true
-    
-    const value = formData[fieldName as keyof FormData]
-    
-    // Validación de campo requerido
-    if (fieldConfig.required && (!value && value !== 0)) {
-      validationErrors[fieldName] = 'Este campo es requerido'
-      return false
+    const fieldConfig = formConfig[fieldName];
+    if (!fieldConfig) return true;
+
+    const value = formData[fieldName as keyof FormData];
+
+    // Para depurar, este log es clave:
+    //console.log(`Validando campo: '${fieldName}', Valor:`, value, `(Tipo: ${typeof value})`, '¿Requerido?:', !!fieldConfig.required);
+
+    // 1. Validación de campo requerido (MEJORADA)
+    if (fieldConfig.required && isValueEmpty(value)) {
+      validationErrors[fieldName] = 'Este campo es requerido';
+      return false;
     }
     
-    // Validación de patrón
-    if (fieldConfig.pattern && value) {
-      const regex = new RegExp(fieldConfig.pattern)
+    // Si el campo no es requerido y está vacío, no se realizan más validaciones.
+    if (!fieldConfig.required && isValueEmpty(value)) {
+      // Limpiamos el error si lo hubiera de una validación anterior
+      delete validationErrors[fieldName];
+      return true;
+    }
+
+    // 2. Validación de patrón
+    if (fieldConfig.pattern) { // Se valida incluso si el valor es 0 o false
+      const regex = new RegExp(fieldConfig.pattern);
       if (!regex.test(String(value))) {
-        validationErrors[fieldName] = 'El formato no es válido'
-        return false
+        validationErrors[fieldName] = 'El formato no es válido';
+        return false;
       }
     }
-    
-    // Validación de rango para números
-    if (fieldConfig.type === 'number' && value !== null && value !== '') {
-      const numValue = Number(value)
+
+    // 3. Validación de rango para números
+    if (fieldConfig.type === 'number') { // El value ya no es null/undefined en este punto
+      const numValue = Number(value);
+      if (isNaN(numValue)) {
+          // Opcional: Podrías añadir un error si el valor no es un número válido
+          validationErrors[fieldName] = 'Debe ser un número válido';
+          return false;
+      }
       if (fieldConfig.min !== undefined && numValue < fieldConfig.min) {
-        validationErrors[fieldName] = `El valor mínimo es ${fieldConfig.min}`
-        return false
+        validationErrors[fieldName] = `El valor mínimo es ${fieldConfig.min}`;
+        return false;
       }
       if (fieldConfig.max !== undefined && numValue > fieldConfig.max) {
-        validationErrors[fieldName] = `El valor máximo es ${fieldConfig.max}`
-        return false
+        validationErrors[fieldName] = `El valor máximo es ${fieldConfig.max}`;
+        return false;
       }
     }
     
-    return true
+    // Si pasa todas las validaciones, nos aseguramos de que no haya un error antiguo
+    delete validationErrors[fieldName];
+    return true;
   }
 
   // Función para validar todo el formulario
@@ -163,7 +188,7 @@ export function useFormManager(options: UseFormManagerOptions) {
     Object.keys(validationErrors).forEach(key => {
       delete validationErrors[key]
     })
-    
+    console.log("formData", formData) // proxy target-handler
     // Validar solo campos visibles
     visibleFields.value.forEach(([fieldName]) => {
       if (!validateField(fieldName)) {
@@ -188,7 +213,8 @@ export function useFormManager(options: UseFormManagerOptions) {
     
     try {
       if (onSubmit) {
-        await onSubmit(formData)
+        const plainFormData = toRaw(formData)
+        await onSubmit(plainFormData) 
       }
     } catch (error) {
       console.error('Error al enviar formulario:', error)

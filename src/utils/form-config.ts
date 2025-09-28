@@ -73,6 +73,7 @@ const defaultProductFormConfig: FormConfig = {
 };
 function getCategories(){
   const categories = () => [
+    {id: '',name:'Sin Categoría',icon:'category'},
     { id: 'meals', name: 'Comidas', icon: 'restaurant' },
     { id: 'burgers', name: 'Hamburguesas', icon: 'lunch_dining' },
     { id: 'sandwiches', name: 'Sandwiches', icon: 'fastfood' },
@@ -88,6 +89,7 @@ const defaultProductData: FormData = {
   id: '',
   name: 'Nuevo Producto',
   price: 0.00,
+  category: false,
   description: '',
   image: '/images/default-product.svg',
   fallback: '🍽️'

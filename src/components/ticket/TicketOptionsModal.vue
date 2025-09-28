@@ -37,8 +37,8 @@
         <div v-if="ticketData" class="bg-gray-50 rounded-lg p-4 mb-6">
           <div class="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span class="font-medium text-gray-700">{{ t('ticketModal.ticketNumber') }}:</span>
-              <div class="font-mono text-blue-600">{{ ticketData.ticketNumber }}</div>
+              <span class="font-medium text-gray-700">{{ t('ticketModal.ticketID') }}:</span>
+              <div class="font-mono text-blue-600">{{ ticketData.ticketID }}</div>
             </div>
             <div>
               <span class="font-medium text-gray-700">{{ t('ticketModal.total') }}:</span>
@@ -97,29 +97,11 @@
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import QRCode from 'qrcode';
+import type{ CustomerData,TicketData } from '@/utils/ticketStore';
 // To enable the functions below, you may need to install type definitions:
 // npm install --save-dev @types/jspdf @types/html2canvas
 // import jsPDF from 'jspdf';
 // import html2canvas from 'html2canvas';
-
-// --- TYPE DEFINITIONS ---
-
-interface CustomerData {
-  name: string;
-  dni: string;
-}
-
-interface TicketData {
-  ticketNumber: string;
-  total: number;
-  date: string;
-  time: string;
-  customerData: CustomerData;
-  qrCodeDataURL?: string; // QR code can be passed in or generated
-}
-
-
-// --- PROPS & EMITS ---
 
 const props = withDefaults(defineProps<{
   isVisible: boolean;
@@ -168,7 +150,7 @@ const generateQRCode = async (): Promise<void> => {
 
   try {
     const ticketParams = new URLSearchParams({
-      ticket: props.ticketData.ticketNumber,
+      ticket: props.ticketData.ticketID,
       date: props.ticketData.date,
       time: props.ticketData.time,
       customer: props.ticketData.customerData.name,
@@ -176,7 +158,6 @@ const generateQRCode = async (): Promise<void> => {
     });
 
     const ticketUrl = `${window.location.origin}?${ticketParams.toString()}`;
-
     qrCodeDataURL.value = await QRCode.toDataURL(ticketUrl, {
       width: 200,
       margin: 2,

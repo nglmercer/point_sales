@@ -30,7 +30,7 @@
           <!-- Ticket Info from URL -->
           <div class="space-y-2 text-sm">
             <div class="flex justify-between">
-              <span class="font-medium">{{ t('ticketForm.ticketNumber') }}</span>
+              <span class="font-medium">{{ t('ticketForm.ticketID') }}</span>
               <span>{{ urlTicketData.ticket }}</span>
             </div>
             <div class="flex justify-between">
@@ -162,28 +162,11 @@ import TicketOptionsModal from './ticket/TicketOptionsModal.vue'
 import MainForm from './Forms/MainForm.vue'
 import '@litcomponents/dialog.js'
 import '@litcomponents/CInput.js'
-import { dbManager, type Product as DBProduct,seedData,initializeDatabase } from '@/utils/productStore.js'
+import { dbManager, type Product as DBProduct,seedData,initializeDatabase } from '@/utils/StoreManager.js'
+import type{ CartItem,CustomerData,TicketData, } from '@/utils/ticketStore.js'
+import { ticketDBManager } from '@/utils/ticketStore.js'
 
 // --- Type Definitions ---
-interface CartItem extends DBProduct {
-  quantity: number;
-}
-interface CustomerData {
-  name: string;
-  dni: string;
-  phone?: string;
-  address?: string;
-  orderType: 'dine-in' | 'takeout' | 'delivery' | '';
-}
-interface TicketData {
-  ticketNumber: string;
-  customerData: CustomerData;
-  cartItems: CartItem[];
-  total: number;
-  date: string;
-  time: string;
-  qrCodeDataURL: string;
-}
 interface Category {
   id: string;
   name: string;
@@ -277,7 +260,11 @@ const filteredProducts = computed<DBProduct[]>(() => {
 })
 
 const cartItemCount = computed<number>(() => {
-  return cart.value.reduce((total, item) => total + item.quantity, 0)
+  let count = 0
+  for (const item of cart.value) {
+    count += item.quantity || 0
+  }
+  return count
 })
 
 // Category navigation items for SidebarNav
@@ -368,15 +355,21 @@ const closeDesktopTicketForm = () => {
   showDesktopTicketForm.value = false
 }
 
-const handleTicketGenerated = (ticketData: TicketData) => {
-  console.log('Ticket generated:', ticketData)
+const handleTicketGenerated =async (ticketData: TicketData) => {
   
   currentTicketData.value = {
     ...ticketData,
     cartItems: ticketData.cartItems || [...cart.value],
     customerData: ticketData.customerData
   }
-  
+  const { qrCodeDataURL, ...alldata } = ticketData
+  console.log('Ticket generated:', alldata)
+  await ticketDBManager.openDatabase()
+  await ticketDBManager.add({
+    ...alldata,
+    customerData: JSON.stringify(alldata.customerData),
+    cartItems: JSON.stringify(alldata.cartItems)
+  })
   showTicketModal.value = true
   
   if (showMobileTicketForm.value) {

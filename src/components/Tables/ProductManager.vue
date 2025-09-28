@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, nextTick } from 'vue';
-import { dbManager, initializeDatabase, type Product } from '@/utils/productStore';
+import { productService, initializeDatabase, type Product } from '@/utils/StoreManager';
 import DataTable from '@/components/Tables/DataTable.vue';
 import MainForm from '@/components/Forms/MainForm.vue'; // Asume que MainForm está en esta ruta
 import {DlgCont} from '@/litcomponents/dialog.ts';
@@ -45,7 +45,8 @@ const selectedProduct = ref<Product | null>(null);
 const mainFormRef = ref<InstanceType<typeof MainForm> | null>(null);
 
 // --- Título dinámico para el formulario ---
-const formTitle = computed(() => 
+const formTitle = computed<string>(() =>
+    //@ts-ignore
   selectedProduct.value ? 'Editar Producto' : 'Nuevo Producto'
 );
 
@@ -76,7 +77,7 @@ onMounted(async () => {
 async function fetchProducts() {
   isLoading.value = true;
   try {
-    const allProducts  = await dbManager.getAll();
+    const allProducts  = await productService.getAllProducts();
     products.value = allProducts as Product[];
   } catch (error) {
     console.error("Error al cargar los productos:", error);
@@ -101,7 +102,7 @@ function handleTableAction(eventName: string, product: Product) {
       showProductModal.value = true;
       // Espera a que el DOM se actualice y el formulario sea visible
       nextTick(() => {
-        mainFormRef.value?.setFormData(product);
+        mainFormRef.value?.setFormData({ ...product } as Partial<Record<string, string | number | boolean | string[]>>);
       });
       break;
     case 'delete':
@@ -114,7 +115,7 @@ function handleTableAction(eventName: string, product: Product) {
 
 async function deleteProduct(productId: number) {
   try {
-    await dbManager.delete(productId);
+    await productService.deleteProduct(productId);
     console.log(`Producto con ID ${productId} eliminado.`);
     await fetchProducts(); // Recargar la lista
   } catch (error) {
@@ -125,7 +126,7 @@ async function deleteProduct(productId: number) {
 async function handleFormSubmit(formData: any) {
   try {
     // El método saveData de idb-manager maneja tanto la creación como la actualización
-    await dbManager.saveData(formData);
+    await productService.saveProduct(formData)
     console.log("Producto guardado:", formData);
     showProductModal.value = false;
     await fetchProducts(); // Recargar la lista para ver los cambios

@@ -5,7 +5,7 @@
       <!-- Logo -->
       <div class="p-4 border-b">
         <!-- <div class="text-yellow-500 text-2xl font-bold text-center">M</div> -->
-        <img src="/public/logo_image.png" alt="logo image" class="size-16">
+        <img src="/logo_image.png" alt="logo image" class="size-16">
       </div>
         <LanguageSwitcher />
       <!-- Category Navigation -->

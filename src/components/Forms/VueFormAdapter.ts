@@ -4,7 +4,7 @@ import { IndexedDBManager } from 'idb-manager'
 import { seleccionarYParsearJSON } from '@/utils/jsonutils/import'
 import { exportarJSON } from '@/utils/jsonutils/export'
 import { safeParse } from '@utils/jsonutils/safeparse.ts'
-import { dbManager, type Product,dbConfig } from '@/utils/productStore'
+import { dbManager, type Product } from '@/utils/StoreManager'
 
 export class VueFormAdapter {
   private formDatabase: IndexedDBManager
@@ -12,7 +12,11 @@ export class VueFormAdapter {
   private modalElement: any = null
 
   constructor() {
-    this.formDatabase = new IndexedDBManager(dbConfig,{autoInit:true})
+    this.formDatabase = new IndexedDBManager({
+      name: 'PointSales',
+      version: 2,
+      store: 'tickets'
+    },{autoInit:true})
     this.setupEventListeners()
     this.handleQueryParams()
   }

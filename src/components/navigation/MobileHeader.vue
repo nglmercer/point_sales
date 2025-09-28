@@ -13,7 +13,7 @@
           </svg>
         </button>
         <!-- <div class="text-yellow-500 text-2xl font-bold">M</div> -->
-         <img src="/public/logo_image.png" alt="logo image" class="size-16">
+         <img src="/logo_image.png" alt="logo image" class="size-16">
       </div>
           <!-- Language Switcher Component -->
     <LanguageSwitcher />
