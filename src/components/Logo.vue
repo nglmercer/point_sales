@@ -1,8 +1,10 @@
 <template>
   <div :class="containerClass">
-    <div :class="logoClass" class="text-yellow-500 font-bold">M</div>
+    <div :class="logoClass" class="text-yellow-500 font-bold flex justify-center">
+      <img src="/logo_image.png" alt="logo" class="size-16">
+    </div>
     <div v-if="showText" :class="textClass">
-      <h1 :class="titleClass">McDonald's</h1>
+      <h1 :class="titleClass">{{ "Name" }}</h1>
       <p v-if="subtitle" :class="subtitleClass">{{ subtitle }}</p>
     </div>
   </div>

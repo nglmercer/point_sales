@@ -19,10 +19,8 @@
       <!-- Content -->
       <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
         <!-- Brand Header -->
-        <div v-if="showBrandHeader" class="text-center mb-6">
-          <div v-if="brandIcon" class="text-4xl mb-2 text-yellow-500">{{ brandIcon }}</div>
-          <h1 class="text-xl font-bold">{{ brandName }}</h1>
-          <p v-if="tagline" class="text-sm text-gray-600 mt-1">{{ tagline }}</p>
+        <div v-if="showBrandHeader" class="text-center mb-6"> 
+          <Logo size="md" />
         </div>
 
         <!-- Ticket Information -->
@@ -82,6 +80,7 @@ import { computed, ref, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { TicketData } from '@/utils/StoreManager.js'
 import { qrCodeService } from '@/utils/QRCodeService.js'
+import Logo from '../Logo.vue'
 
 // --- INTERFACES ---
 interface TicketField {
@@ -118,7 +117,7 @@ const props = withDefaults(defineProps<SimpleTicketViewerProps>(), {
   brandIcon: 'M',
   tagline: '',
   footerText: '',
-  website: 'www.mcdonalds.com',
+  website: '',
   closeButtonText: '',
   showQRCode: true,
   showPrintButton: true,

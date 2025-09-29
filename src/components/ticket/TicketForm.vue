@@ -190,7 +190,6 @@
           <!-- Footer -->
           <div class="text-center mt-4 text-sm text-gray-600">
             <p>{{ t('ticketForm.success') }}</p>
-            <p>www.mcdonalds.com</p>
           </div>
         </div>
 
