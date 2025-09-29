@@ -72,6 +72,7 @@
     "dniRequired": "DNI *",
     "phoneNumber": "Phone Number",
     "address": "Address",
+    "description": "Description",
     "orderType": "Order Type",
     "orderTypeRequired": "Order Type *",
     "selectOrderType": "Select order type",
@@ -114,7 +115,8 @@
       "email": "Enter your email",
       "dni": "Enter your DNI",
       "phone": "Enter your phone number",
-      "address": "Enter your address (optional)"
+      "address": "Enter your address (optional)",
+      "description": "Enter a description (optional)"
     },
     "ticketViewer": "Ticket Viewer",
     "customer": "Customer:",

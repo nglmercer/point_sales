@@ -92,6 +92,7 @@
     "dni": "DNI:",
     "phone": "Teléfono:",
     "address": "Dirección",
+    "description": "Descripción",
     "orderDetails": "Detalles del Pedido",
     "totalAmount": "Monto Total:",
     "downloadReceipt": "Descargar Recibo",
@@ -114,6 +115,7 @@
       "email": "Ingresa tu correo electrónico",
       "phone": "Ingresa tu número de teléfono",
       "address": "Ingresa tu dirección (opcional)",
+      "description": "Ingresa una descripción (opcional)",
       "dni": "Ingresa tu número de DNI"
     },
     "ticketViewer": "Visor de Ticket",

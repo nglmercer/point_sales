@@ -71,15 +71,15 @@
 
           <!-- Address -->
           <div>
-            <label for="address" class="block text-sm font-medium text-gray-700 mb-1">
-              {{ t('ticketForm.address') }}
+            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+              {{ t('ticketForm.description') }}
             </label>
             <textarea
-              id="address"
-              v-model="customerData.address"
+              id="description"
+              v-model="customerData.description"
               rows="2"
               :class="mobile ? 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm' : 'w-full px-3 py-2 border border-gray-300 rounded-md'"
-              :placeholder="t('ticketForm.placeholders.address')"
+              :placeholder="t('ticketForm.placeholders.description')"
             ></textarea>
           </div>
 
@@ -96,7 +96,6 @@
               <option value="">{{ t('ticketForm.selectOrderType') }}</option>
               <option value="dine-in">{{ t('ticketForm.dineIn') }}</option>
               <option value="takeout">{{ t('ticketForm.takeout') }}</option>
-              <option value="delivery">{{ t('ticketForm.delivery') }}</option>
             </select>
           </div>
 
@@ -233,6 +232,7 @@ interface LocalCustomerData {
   dni: string;
   phone?: string;
   address?: string;
+  description?: string;
   orderType?: OrderType | ''; // Allow empty string for initial state
 }
 // --- PROPS & EMITS ---
@@ -265,6 +265,7 @@ const customerData = ref<LocalCustomerData>({
   dni: '',
   phone: '',
   address: '',
+  description: '',
   orderType: '',
 });
 
