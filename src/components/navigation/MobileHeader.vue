@@ -12,8 +12,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
         </button>
-        <!-- <div class="text-yellow-500 text-2xl font-bold">M</div> -->
-         <img src="/logo_image.png" alt="logo image" class="size-16">
+        <Logo size="sm" :show-text="false" />
       </div>
           <!-- Language Switcher Component -->
     <LanguageSwitcher />
@@ -40,6 +39,7 @@
 
 <script setup>
 import LanguageSwitcher from './LanguageSwitcher.vue'
+import Logo from '../Logo.vue'
 defineProps({
   cartItemCount: {
     type: Number,

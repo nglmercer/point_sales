@@ -73,7 +73,8 @@ export interface CustomerData extends DatabaseItem {
 export interface TicketData extends DatabaseItem {
   ticketID: string;
   customerData: CustomerData;
-  cartItems: CartItem[] | string;
+  cartItems: CartItem[];
+  name?: string;
   total: number;
   date: string;
   time: string;

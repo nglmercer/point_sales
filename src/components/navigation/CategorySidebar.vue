@@ -25,8 +25,8 @@
       </div>
       
       <!-- McDonald's logo - only show on desktop -->
-      <div v-if="!mobile" class="mt-4 text-center">
-        <div class="text-yellow-500 text-4xl font-bold">M</div>
+      <div v-if="!mobile" class="mt-4">
+        <Logo size="md" :show-text="false" />
       </div>
     </div>
     
@@ -60,6 +60,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import SidebarNav from './SidebarNav.vue'
+import Logo from '../Logo.vue'
 
 const searchQuery = ref('')
 

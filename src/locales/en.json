@@ -103,6 +103,7 @@
     "thankYou": "Thank you for your order!",
     "keepReceipt": "Please keep this receipt for your records.",
     "thankYouFooter": "Thank you for choosing McDonald's!",
+    "printTicket": "Print Ticket",
     "orderTypes": {
       "dineIn": "Dine In",
       "takeout": "Takeout",

@@ -103,6 +103,7 @@
     "newOrder": "Nueva Orden",
     "keepReceipt": "Por favor conserve este recibo para sus registros.",
     "thankYouFooter": "¡Gracias por elegir McDonald's!",
+    "printTicket": "Imprimir Ticket",
     "orderTypes": {
       "dineIn": "Comer Aquí",
       "takeout": "Para Llevar",

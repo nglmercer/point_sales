@@ -4,8 +4,7 @@
     <div class="w-24 bg-white border-r shadow-sm flex flex-col">
       <!-- Logo -->
       <div class="p-4 border-b">
-        <!-- <div class="text-yellow-500 text-2xl font-bold text-center">M</div> -->
-        <img src="/logo_image.png" alt="logo image" class="size-16">
+        <Logo size="sm" :show-text="false" />
       </div>
         <LanguageSwitcher />
       <!-- Category Navigation -->
@@ -89,6 +88,7 @@ import SearchBar from '@components/products/SearchBar.vue'
 import ProductGrid from '@components/products/ProductGrid.vue'
 import OrderSummary from '../OrderSummary.vue'
 import LanguageSwitcher from './LanguageSwitcher.vue'
+import Logo from '../Logo.vue'
 
 defineProps({
   categoryNavItems: {

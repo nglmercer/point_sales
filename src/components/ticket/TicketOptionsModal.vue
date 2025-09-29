@@ -96,7 +96,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import QRCode from 'qrcode';
+import { qrCodeService } from '@/utils/QRCodeService.js';
 import type{ CustomerData,TicketData } from '@/utils/StoreManager.js'
 // To enable the functions below, you may need to install type definitions:
 // npm install --save-dev @types/jspdf @types/html2canvas
@@ -133,40 +133,23 @@ const qrCodeDataURL = ref<string>('');
 // Watch for changes in ticketData to update the QR code
 watch(() => props.ticketData, async (newTicketData: TicketData | null) => {
   if (newTicketData) {
-    // Use existing QR code if provided, otherwise generate a new one
-    if (newTicketData.qrCodeDataURL) {
-      qrCodeDataURL.value = newTicketData.qrCodeDataURL;
-    } else {
-      await generateQRCode();
+    console.log('newTicketData', newTicketData)
+    // Always generate a new QR code using the service
+    try {
+      qrCodeDataURL.value = await qrCodeService.generateTicketQRCode(newTicketData, {
+        width: 200,
+        margin: 2
+      });
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+      qrCodeDataURL.value = '';
     }
   } else {
     qrCodeDataURL.value = ''; // Clear QR code if ticketData is null
   }
 }, { immediate: true });
 
-// Generate QR Code with ticket data
-const generateQRCode = async (): Promise<void> => {
-  if (!props.ticketData) return;
 
-  try {
-    const ticketParams = new URLSearchParams({
-      ticket: props.ticketData.ticketID,
-      date: props.ticketData.date,
-      time: props.ticketData.time,
-      customer: props.ticketData.customerData.name,
-      total: props.ticketData.total.toString(),
-    });
-
-    const ticketUrl = `${window.location.origin}?${ticketParams.toString()}`;
-    qrCodeDataURL.value = await QRCode.toDataURL(ticketUrl, {
-      width: 200,
-      margin: 2,
-    });
-  } catch (error) {
-    console.error('Error generating QR code:', error);
-    qrCodeDataURL.value = '';
-  }
-};
 
 // --- MODAL ACTIONS ---
 

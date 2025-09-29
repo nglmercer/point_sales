@@ -21,7 +21,7 @@
     </div>
 
     <!-- Content -->
-    <div :class="mobile ? 'flex-1 overflow-y-auto' : 'max-h-96 overflow-y-auto'">
+    <div :class="mobile ? 'flex-1 overflow-y-auto' : 'overflow-y-auto'">
       <!-- Customer Form -->
       <div v-if="!showTicket" :class="mobile ? 'p-4' : 'p-6'">
         <form @submit.prevent="generateTicket" class="space-y-4">
@@ -130,9 +130,7 @@
         <div ref="ticketRef" class="bg-white border-2 border-dashed border-gray-300 p-4 rounded-lg">
           <!-- Restaurant Header -->
           <div class="text-center border-b pb-4 mb-4">
-            <div class="text-yellow-500 text-4xl font-bold mb-2">M</div>
-            <h1 class="text-xl font-bold">McDonald's</h1>
-            <p class="text-sm text-gray-600">{{ t('ticketForm.thankYou') }}</p>
+            <Logo size="lg" :show-text="true" :subtitle="t('ticketForm.thankYou')" />
           </div>
 
           <!-- Ticket Info -->
@@ -218,7 +216,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import QRCode from 'qrcode'
+import { qrCodeService } from '@/utils/QRCodeService.js'
+import type { CartItem, CustomerData as StoreCustomerData, TicketData as StoreTicketData } from '@/utils/StoreManager.ts'
+import Logo from '../Logo.vue'
 // To enable the functions below, you may need to install type definitions:
 // npm install --save-dev @types/jspdf @types/html2canvas
 // import jsPDF from 'jspdf'
@@ -226,34 +226,15 @@ import QRCode from 'qrcode'
 
 // --- TYPE DEFINITIONS ---
 
-interface CartItem {
-  id: string | number;
-  name: string;
-  quantity: number;
-  price: number;
-}
-
 type OrderType = 'dine-in' | 'takeout' | 'delivery';
 
-interface CustomerData {
+interface LocalCustomerData {
   name: string;
   dni: string;
   phone?: string;
   address?: string;
   orderType?: OrderType | ''; // Allow empty string for initial state
 }
-
-interface TicketData {
-  ticketID: string;
-  customerData: CustomerData;
-  cartItems: CartItem[];
-  total: number;
-  date: string;
-  time: string;
-  qrCodeDataURL: string;
-}
-
-
 // --- PROPS & EMITS ---
 
 const props = withDefaults(defineProps<{
@@ -266,9 +247,9 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   (e: 'close'): void;
   (e: 'complete'): void;
-  (e: 'ticket-generated', payload: TicketData): void;
+  (e: 'ticket-generated', payload: StoreTicketData): void;
   (e: 'back-to-cart'): void;
-}>();
+}>()
 
 
 // --- COMPOSITION API ---
@@ -279,7 +260,7 @@ const { t } = useI18n();
 // --- REACTIVE STATE ---
 
 const showTicket = ref<boolean>(false);
-const customerData = ref<CustomerData>({
+const customerData = ref<LocalCustomerData>({
   name: '',
   dni: '',
   phone: '',
@@ -315,10 +296,26 @@ const getOrderTypeTranslation = (orderType: OrderType | '' =''): string => {
 
 const generateQRCode = async (): Promise<void> => {
   try {
-    const ticketUrl = `${window.location.origin}?ticket=${ticketID.value}&total=${total.value}`;
-    qrCodeDataURL.value = await QRCode.toDataURL(ticketUrl, {
+    // Convert local customer data to StoreManager format for QR code
+    const storeCustomerData: StoreCustomerData = {
+      ...customerData.value,
+      id: customerData.value.dni // Use DNI as the ID for customer data
+    };
+
+    // Build ticket data for QR generation
+    const ticketData = {
+      id: ticketID.value,
+      ticketID: ticketID.value,
+      total: total.value,
+      date: ticketDate.value,
+      time: ticketTime.value,
+      customerData: storeCustomerData,
+      cartItems: props.cartItems
+    }
+    
+    qrCodeDataURL.value = await qrCodeService.generateTicketQRCode(ticketData, {
       width: 200,
-      margin: 2,
+      margin: 2
     });
   } catch (error) {
     console.error('Error generating QR code:', error);
@@ -375,10 +372,17 @@ const generateTicket = async (): Promise<void> => {
   // Show the ticket view
   showTicket.value = true;
 
+  // Convert local customer data to StoreManager format
+  const storeCustomerData: StoreCustomerData = {
+    ...customerData.value,
+    id: customerData.value.dni // Use DNI as the ID for customer data
+  };
+
   // Emit ticket data to parent
   emit('ticket-generated', {
+    id: ticketID.value,
     ticketID: ticketID.value,
-    customerData: { ...customerData.value }, // Send a copy
+    customerData: storeCustomerData,
     cartItems: props.cartItems,
     total: total.value,
     date: ticketDate.value,

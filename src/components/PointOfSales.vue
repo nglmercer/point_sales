@@ -2,73 +2,16 @@
 <!-- FILE 1: Main Application View (e.g., App.vue)           -->
 <!-- ======================================================= -->
 <template>
-  <div class="max-h-dvh">
+  <div class="max-h-dvh h-full">
     <!-- Notification Component -->
     <NotificationComponent />
     <!-- Ticket Viewer (when accessed via QR code) -->
-    <div v-if="showTicketViewer" class="fixed inset-0 bg-white/95 backdrop-blur-md z-50 overflow-y-auto">
-      <div class="max-w-md mx-auto p-4">
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-6 p-4 bg-blue-600 text-white rounded-lg">
-          <h1 class="text-xl font-bold">{{ t('ticketForm.ticketViewer') }}</h1>
-          <button @click="closeTicketViewer" class="text-white hover:text-gray-200">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Ticket Content -->
-        <div class="bg-white/90 backdrop-blur-sm border-2 border-dashed border-gray-300 p-6 rounded-lg shadow-lg">
-          <!-- Restaurant Header -->
-          <div class="text-center border-b pb-4 mb-4">
-            <div class="text-yellow-500 text-4xl font-bold mb-2">M</div>
-            <h1 class="text-xl font-bold">McDonald's</h1>
-            <p class="text-sm text-gray-600">{{ t('ticketForm.thankYou') }}</p>
-          </div>
-
-          <!-- Ticket Info from URL -->
-          <div class="space-y-2 text-sm">
-            <div class="flex justify-between">
-              <span class="font-medium">{{ t('ticketForm.ticketID') }}</span>
-              <span>{{ urlTicketData.ticket }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="font-medium">{{ t('ticketForm.date') }}</span>
-              <span>{{ urlTicketData.date }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="font-medium">{{ t('ticketForm.time') }}</span>
-              <span>{{ urlTicketData.time }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="font-medium">{{ t('ticketForm.customer') }}</span>
-              <span>{{ urlTicketData.customer }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="font-medium">{{ t('ticketForm.totalAmount') }}</span>
-              <span>${{ urlTicketData.total }}</span>
-            </div>
-          </div>
-
-          <!-- Footer -->
-          <div class="text-center mt-6 text-sm text-gray-600">
-            <p>{{ t('ticketForm.success') }}</p>
-            <p>www.mcdonalds.com</p>
-          </div>
-        </div>
-
-        <!-- Action Button -->
-        <div class="mt-6">
-          <button 
-            @click="closeTicketViewer"
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors"
-          >
-            {{ t('ticketForm.backToMenu') }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <SimpleTicketViewer
+      :is-visible="showTicketViewer"
+      :ticket-info="urlTicketData"
+      @close="closeTicketViewer"
+      @print="handlePrintTicket"
+    />
 
     <!-- Ticket Options Modal -->
     <TicketOptionsModal 
@@ -91,8 +34,14 @@
     </div>
 
     <!-- Desktop Ticket Form (Modal) -->
-    <div v-if="showDesktopTicketForm" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 hidden md:flex items-center justify-center">
-      <div class="bg-white/95 backdrop-blur-md rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-hidden border border-gray-200">
+    <dlg-cont :visible="showDesktopTicketForm">
+      <div
+        class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl 
+              w-full mx-4 overflow-hidden border border-gray-200
+              min-h-[60dvh] max-h-[92dvh] 
+              sm:max-w-lg md:max-w-2xl lg:max-w-3xl 
+              sm:min-h-[65dvh] md:min-h-[70dvh] lg:min-h-[75dvh]"
+      >
         <TicketForm
           :cart-items="cart"
           :mobile="false"
@@ -101,11 +50,11 @@
           ref="desktopTicketFormRef"
         />
       </div>
-    </div>
+    </dlg-cont>
 
     <!-- Desktop Layout -->
     <DesktopLayout
-      v-if="!showMobileTicketForm && !showDesktopTicketForm"
+      v-if="!showMobileTicketForm"
       :category-nav-items="categoryNavItems"
       :search-query="searchQuery"
       :filtered-products="filteredProducts"
@@ -160,6 +109,7 @@ import DesktopLayout from './navigation/DesktopLayout.vue'
 import MobileLayout from './navigation/MobileLayout.vue'
 import NotificationComponent from './NotificationComponent.vue'
 import TicketOptionsModal from './ticket/TicketOptionsModal.vue'
+import SimpleTicketViewer from './ticket/SimpleTicketViewer.vue'
 import MainForm from './Forms/MainForm.vue'
 import '@litcomponents/dialog.js'
 import '@litcomponents/CInput.js'
@@ -451,12 +401,21 @@ const parseTicketFromURL = (): boolean => {
   const ticket = urlParams.get('ticket')
   
   if (ticket) {
+    // Extract customer data from URL parameters
+    const customerData = {
+      name: urlParams.get('customer') || urlParams.get('name') || '',
+      email: urlParams.get('email') || '',
+      phone: urlParams.get('phone') || '',
+      address: urlParams.get('address') || ''
+    }
+    
+    // Build complete ticket info object
     urlTicketData.value = {
       ticket: ticket,
-      date: urlParams.get('date') || '',
-      time: urlParams.get('time') || '',
-      customer: urlParams.get('customer') || '',
-      total: urlParams.get('total') || ''
+      date: urlParams.get('date') || new Date().toLocaleDateString(),
+      time: urlParams.get('time') || new Date().toLocaleTimeString(),
+      customer: customerData.name || urlParams.get('customer') || '',
+      total: urlParams.get('total') || '0.00',
     }
     showTicketViewer.value = true
     return true
@@ -469,6 +428,10 @@ const closeTicketViewer = () => {
   const url = new URL(window.location.toString())
   url.search = ''
   window.history.replaceState({}, '', url)
+}
+
+const handlePrintTicket = () => {
+  window.print()
 }
 
 const closeAllModals = () => {
