@@ -8,7 +8,7 @@ import tailwindcss from '@tailwindcss/vite';
 // https://astro.build/config
 export default defineConfig({
   integrations: [vue({ 
-    devtools: true,
+    devtools: false,
     appEntrypoint: '/src/utils/vue-app.js',
     template: {
       compilerOptions: {
@@ -20,5 +20,7 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()]
-  }
+  },
+  site: 'https://nglmercer.github.io/point_sales',
+  base: '/',
 });
