@@ -1,7 +1,7 @@
 import { ref,toRaw , reactive, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import type { FormData, FormConfig } from '@/utils/form-config'
 import { defaultProductFormConfig, defaultProductData } from '@/utils/form-config'
-import { dbManager, type Product } from '@/utils/StoreManager'
+import { dbManager, type Product } from '@/utils/idb/StoreManager'
 export interface UseFormManagerOptions {
   formId: string
   initialData?: FormData

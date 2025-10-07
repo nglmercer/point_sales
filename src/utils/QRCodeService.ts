@@ -1,5 +1,5 @@
 import QRCode from 'qrcode'
-import type { TicketData } from '@/utils/StoreManager.js'
+import type { TicketData } from '@/utils/idb/StoreManager.js'
 
 export interface QRCodeGenerationOptions {
   width?: number

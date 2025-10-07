@@ -215,7 +215,7 @@
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { qrCodeService } from '@/utils/QRCodeService.js'
-import type { CartItem, CustomerData as StoreCustomerData, TicketData as StoreTicketData } from '@/utils/StoreManager.ts'
+import type { CartItem, CustomerData as StoreCustomerData, TicketData as StoreTicketData } from '@/utils/idb/StoreManager'
 import Logo from '../Logo.vue'
 // To enable the functions below, you may need to install type definitions:
 // npm install --save-dev @types/jspdf @types/html2canvas

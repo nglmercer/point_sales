@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, nextTick } from 'vue';
-import { productService, initializeDatabase, type Product } from '@/utils/StoreManager';
+import { productService, initializeDatabase, type Product } from '@/utils/idb/StoreManager';
 import DataTable from '@/components/Tables/DataTable.vue';
 import MainForm from '@/components/Forms/MainForm.vue'; // Asume que MainForm está en esta ruta
 import {DlgCont} from '@/litcomponents/dialog.ts';

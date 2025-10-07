@@ -78,7 +78,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { TicketData } from '@/utils/StoreManager.js'
+import type { TicketData } from '@/utils/idb/StoreManager.js'
 import { qrCodeService } from '@/utils/QRCodeService.js'
 import Logo from '../Logo.vue'
 

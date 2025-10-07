@@ -4,7 +4,7 @@ import { IndexedDBManager } from 'idb-manager'
 import { seleccionarYParsearJSON } from '@/utils/jsonutils/import'
 import { exportarJSON } from '@/utils/jsonutils/export'
 import { safeParse } from '@utils/jsonutils/safeparse.ts'
-import { dbManager, type Product } from '@/utils/StoreManager'
+import { dbManager, type Product } from '@/utils/idb/StoreManager'
 
 export class VueFormAdapter {
   private formDatabase: IndexedDBManager

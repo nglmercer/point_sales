@@ -113,8 +113,8 @@ import SimpleTicketViewer from './ticket/SimpleTicketViewer.vue'
 import MainForm from './Forms/MainForm.vue'
 import '@litcomponents/dialog.js'
 import '@litcomponents/CInput.js'
-import { productService, seedData,initializeDatabase,ticketService } from '@/utils/StoreManager.js'
-import type{ CartItem,CustomerData,TicketData,Product as DBProduct, } from '@/utils/StoreManager.js'
+import { productService, seedData,initializeDatabase,ticketService } from '@/utils/idb/StoreManager.js'
+import type{ CartItem,CustomerData,TicketData,Product as DBProduct, } from '@/utils/idb/StoreManager.js'
 
 // --- Type Definitions ---
 interface Category {
