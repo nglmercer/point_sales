@@ -49,6 +49,12 @@
           <div class="flex-1 min-w-0">
             <div class="font-medium text-sm truncate">{{ item.name }}</div>
             <div class="text-lg font-semibold">${{ item.price.toFixed(2) }}</div>
+            <!-- Stock warning -->
+            <div v-if="hasStockTracking(item) && getStockStatus(item) !== 'in-stock'" 
+                 class="text-xs mt-1"
+                 :class="getStockStatusClass(item)">
+              {{ getStockStatusText(item) }}
+            </div>
           </div>
           
           <div class="flex items-center space-x-2">
@@ -147,5 +153,41 @@ const getImageError = (itemId) => {
 
 const setImageError = (itemId) => {
   imageErrors.value.add(itemId)
+}
+
+// Stock management functions
+const hasStockTracking = (item) => {
+  return item.stock !== undefined && item.stock !== null && typeof item.stock === 'number'
+}
+
+const getStockStatus = (item) => {
+  if (!hasStockTracking(item)) return 'no-tracking'
+  if (item.stock === 0) return 'out-of-stock'
+  if (item.stock <= 5) return 'low-stock'
+  return 'in-stock'
+}
+
+const getStockStatusText = (item) => {
+  const status = getStockStatus(item)
+  switch (status) {
+    case 'out-of-stock':
+      return '⚠️ Sin stock'
+    case 'low-stock':
+      return `⚠️ Stock bajo (${item.stock})`
+    default:
+      return ''
+  }
+}
+
+const getStockStatusClass = (item) => {
+  const status = getStockStatus(item)
+  switch (status) {
+    case 'out-of-stock':
+      return 'text-red-600 font-medium'
+    case 'low-stock':
+      return 'text-yellow-600 font-medium'
+    default:
+      return ''
+  }
 }
 </script>

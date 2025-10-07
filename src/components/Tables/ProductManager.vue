@@ -60,6 +60,16 @@ const tableColumns = [
     formatter: (price: number) => `$${price.toFixed(2)}`
   },
   { key: 'category', label: 'Categoría' },
+  { 
+    key: 'stock', 
+    label: 'Stock',
+    formatter: (stock: number | null | undefined) => {
+      if (stock === null || stock === undefined) return 'Sin control';
+      if (stock === 0) return 'Sin stock';
+      if (stock <= 5) return `⚠️ ${stock}`;
+      return stock.toString();
+    }
+  },
 ];
 
 const tableActions = [

@@ -245,6 +245,20 @@ const addToCart = (productId: string) => {
   const product = allProducts.value.find(p => String(p.id) === String(productId))
   if (!product) return
 
+  // Check stock availability if stock tracking is enabled
+  const hasStockTracking = product.stock !== undefined && product.stock !== null && typeof product.stock === 'number'
+  
+  if (hasStockTracking) {
+    const existingItem = cart.value.find(item => String(item.id) === String(productId))
+    const currentQuantity = existingItem ? existingItem.quantity : 0
+    const requestedQuantity = currentQuantity + 1
+    
+    if (requestedQuantity > product.stock!) {
+      alert(`No hay suficiente stock disponible. Stock actual: ${product.stock}`)
+      return
+    }
+  }
+
   const existingItem = cart.value.find(item => String(item.id) === String(productId))
   if (existingItem) {
     existingItem.quantity += 1
@@ -259,6 +273,16 @@ const updateQuantity = (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
       removeFromCart(productId)
     } else {
+      // Check stock availability if stock tracking is enabled
+      const product = allProducts.value.find(p => String(p.id) === String(productId))
+      if (product) {
+        const hasStockTracking = product.stock !== undefined && product.stock !== null && typeof product.stock === 'number'
+        
+        if (hasStockTracking && newQuantity > product.stock!) {
+          alert(`No hay suficiente stock disponible. Stock actual: ${product.stock}`)
+          return
+        }
+      }
       item.quantity = newQuantity
     }
   }

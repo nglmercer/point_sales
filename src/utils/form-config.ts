@@ -69,6 +69,13 @@ const defaultProductFormConfig: FormConfig = {
     label: 'ID',
     type: 'number',
     readonly: true
+  },
+  stock: {
+    label: 'Stock',
+    type: 'number',
+    min: 0,
+    placeholder: 'Dejar vacío para sin control de stock',
+    required: false
   }
 };
 function getCategories(){
@@ -92,6 +99,7 @@ const defaultProductData: FormData = {
   category: false,
   description: '',
   image: '/images/default-product.svg',
-  fallback: '🍽️'
+  fallback: '🍽️',
+  stock: false
 };
 export { defaultProductFormConfig, defaultProductData };
