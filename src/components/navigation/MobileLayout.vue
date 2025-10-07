@@ -9,7 +9,7 @@
     />
 
     <!-- Mobile Content -->
-    <div class="flex-1 overflow-hidden w-full">
+    <div class="flex-1 overflow-hidden w-full max-h-[calc(100vh-64px)]">
       <!-- Menu View -->
       <div 
         v-show="currentMobileView === 'menu'" 

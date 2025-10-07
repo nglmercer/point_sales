@@ -21,7 +21,7 @@
     </div>
 
     <!-- Content -->
-    <div :class="mobile ? 'flex-1 overflow-y-auto' : 'overflow-y-auto'">
+    <div :class="mobile ? 'flex-1 overflow-y-auto max-h-dvh' : 'overflow-y-auto max-h-[70dvh]'">
       <!-- Customer Form -->
       <div v-if="!showTicket" :class="mobile ? 'p-4' : 'p-6'">
         <form @submit.prevent="generateTicket" class="space-y-4">
