@@ -1,6 +1,17 @@
 // src/utils/storeManager.js
 import { IndexedDBManager, type DatabaseSchema } from "idb-manager";
 import type { DatabaseItem } from "idb-manager";
+import { ws } from "./ws";
+ws.on('connect', () => {
+  console.log('WebSocket connected');
+});
+ws.on('disconnect', () => {
+  console.log('WebSocket disconnected');
+});
+ws.on('sync', (...args) => {
+  console.log('Received sync data:', args);
+  // Handle incoming sync data (e.g., update local IndexedDB)
+});
 const pointSalesSchema: DatabaseSchema = {
   name: 'PointSales',
   version: 2,

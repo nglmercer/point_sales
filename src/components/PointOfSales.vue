@@ -1,104 +1,3 @@
-<!-- ======================================================= -->
-<!-- FILE 1: Main Application View (e.g., App.vue)           -->
-<!-- ======================================================= -->
-<template>
-  <div class="max-h-dvh h-full">
-    <!-- Notification Component -->
-    <NotificationComponent />
-    <!-- Ticket Viewer (when accessed via QR code) -->
-    <SimpleTicketViewer
-      :is-visible="showTicketViewer"
-      :ticket-info="urlTicketData"
-      @close="closeTicketViewer"
-      @print="handlePrintTicket"
-    />
-
-    <!-- Ticket Options Modal -->
-    <TicketOptionsModal 
-      :is-visible="showTicketModal"
-      :ticket-data="currentTicketData"
-      @close="closeTicketModal"
-      @view-ticket="(payload) => handleViewTicket(payload as TicketData)"
-      @continue-shopping="handleContinueShopping"
-    />
-
-    <!-- Mobile Ticket Form (Full Screen) -->
-    <div v-if="showMobileTicketForm" class="fixed inset-0 bg-gray-50 z-30 md:hidden">
-      <TicketForm
-        :cart-items="cart"
-        :mobile="true"
-        @ticket-generated="(payload) => handleTicketGenerated(payload as TicketData)"
-        @back-to-cart="closeMobileTicketForm"
-        ref="mobileTicketFormRef"
-      />
-    </div>
-
-    <!-- Desktop Ticket Form (Modal) -->
-    <dlg-cont :visible="showDesktopTicketForm">
-      <div
-        class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl 
-              w-full mx-4 overflow-hidden border border-gray-200
-              min-h-[60dvh] max-h-[92dvh] 
-              sm:max-w-lg md:max-w-2xl lg:max-w-3xl 
-              sm:min-h-[65dvh] md:min-h-[70dvh] lg:min-h-[75dvh]"
-      >
-        <TicketForm
-          :cart-items="cart"
-          :mobile="false"
-          @ticket-generated="(payload) => handleTicketGenerated(payload as TicketData)"
-          @back-to-cart="closeDesktopTicketForm"
-          ref="desktopTicketFormRef"
-        />
-      </div>
-    </dlg-cont>
-
-    <!-- Desktop Layout -->
-    <DesktopLayout
-      v-if="!showMobileTicketForm"
-      :category-nav-items="categoryNavItems"
-      :search-query="searchQuery"
-      :filtered-products="filteredProducts"
-      :category-name="getCurrentCategoryName()"
-      :cart-items="cart"
-      :show-ticket-form="false"
-      :t="t"
-      @category-nav-click="handleCategoryNavClick"
-      @search="handleSearch"
-      @add-to-cart="addToCart"
-      @update-quantity="updateQuantity"
-      @remove-item="removeFromCart"
-      @clear-cart="clearCart"
-      @process-payment="processPayment"
-      @show-ticket-form="() => {}"
-      @ticket-generated="handleTicketGenerated"
-      @back-to-cart="() => {}"
-    />
-
-    <!-- Mobile Layout -->
-    <MobileLayout
-      v-if="!showMobileTicketForm && !showDesktopTicketForm"
-      :current-mobile-view="currentMobileView"
-      :cart-item-count="cartItemCount"
-      :search-query="searchQuery"
-      :filtered-products="filteredProducts"
-      :category-name="getCurrentCategoryName()"
-      :cart-items="cart"
-      :category-nav-items="categoryNavItems"
-      :t="t"
-      @tab-click="handleMobileTabClick"
-      @search="handleSearch"
-      @add-to-cart="addToCart"
-      @update-quantity="updateQuantity"
-      @remove-item="removeFromCart"
-      @clear-cart="clearCart"
-      @process-payment="processPayment"
-      @ticket-generated="handleTicketGenerated"
-      @category-nav-click="handleCategoryNavClick"
-    />
-                        
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref,toRaw, computed, onMounted, onUnmounted } from 'vue'
 import { prepareForIndexedDB, cleanReactiveObject, serializeTicketData } from '@/utils/vueUtils'
@@ -512,3 +411,96 @@ onUnmounted(async () => {
   }
 })
 </script>
+
+<template>
+  
+  <div class="max-h-dvh h-full">
+    <NotificationComponent />
+    <SimpleTicketViewer
+      :is-visible="showTicketViewer"
+      :ticket-info="urlTicketData"
+      @close="closeTicketViewer"
+      @print="handlePrintTicket"
+    />
+
+         <TicketOptionsModal 
+      :is-visible="showTicketModal"
+      :ticket-data="currentTicketData"
+      @close="closeTicketModal"
+      @view-ticket="(payload) => handleViewTicket(payload as TicketData)"
+      @continue-shopping="handleContinueShopping"
+    />
+
+    <div v-if="showMobileTicketForm" class="fixed inset-0 bg-gray-50 z-30 md:hidden">
+      <TicketForm
+        :cart-items="cart"
+        :mobile="true"
+        @ticket-generated="(payload) => handleTicketGenerated(payload as TicketData)"
+        @back-to-cart="closeMobileTicketForm"
+        ref="mobileTicketFormRef"
+      />
+    </div>
+
+    <dlg-cont :visible="showDesktopTicketForm">
+      <div
+        class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl 
+              w-full mx-4 overflow-hidden border border-gray-200
+              min-h-[60dvh] max-h-[92dvh] 
+              sm:max-w-lg md:max-w-2xl lg:max-w-3xl 
+              sm:min-h-[65dvh] md:min-h-[70dvh] lg:min-h-[75dvh]"
+      >
+        <TicketForm
+          :cart-items="cart"
+          :mobile="false"
+          @ticket-generated="(payload) => handleTicketGenerated(payload as TicketData)"
+          @back-to-cart="closeDesktopTicketForm"
+          ref="desktopTicketFormRef"
+        />
+      </div>
+    </dlg-cont>
+
+    <DesktopLayout
+      v-if="!showMobileTicketForm"
+      :category-nav-items="categoryNavItems"
+      :search-query="searchQuery"
+      :filtered-products="filteredProducts"
+      :category-name="getCurrentCategoryName()"
+      :cart-items="cart"
+      :show-ticket-form="false"
+      :t="t"
+      @category-nav-click="handleCategoryNavClick"
+      @search="handleSearch"
+      @add-to-cart="addToCart"
+      @update-quantity="updateQuantity"
+      @remove-item="removeFromCart"
+      @clear-cart="clearCart"
+      @process-payment="processPayment"
+      @show-ticket-form="() => {}"
+      @ticket-generated="handleTicketGenerated"
+      @back-to-cart="() => {}"
+    />
+
+    <MobileLayout
+      v-if="!showMobileTicketForm && !showDesktopTicketForm"
+      :current-mobile-view="currentMobileView"
+      :cart-item-count="cartItemCount"
+      :search-query="searchQuery"
+      :filtered-products="filteredProducts"
+      :category-name="getCurrentCategoryName()"
+      :cart-items="cart"
+      :category-nav-items="categoryNavItems"
+      :t="t"
+      @tab-click="handleMobileTabClick"
+      @search="handleSearch"
+      @add-to-cart="addToCart"
+      @update-quantity="updateQuantity"
+      @remove-item="removeFromCart"
+      @clear-cart="clearCart"
+      @process-payment="processPayment"
+      @ticket-generated="handleTicketGenerated"
+      @category-nav-click="handleCategoryNavClick"
+    />
+                        
+  </div>
+</template>
+
