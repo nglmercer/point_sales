@@ -6,7 +6,7 @@ import type {
   StoreName, 
   SyncStatus
 } from './types';
-import { IndexedDBManager,type DatabaseItem } from 'idb-manager';
+import { IndexedDBManager, type DatabaseItem } from 'idb-manager';
 
 /**
  * SyncController - Manages synchronization between IndexedDB and remote server
@@ -78,19 +78,33 @@ export class SyncController {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const result: SyncResponse<T> = await response.json();
+      const result = await response.json();
       
-      // Update local store with server data
-      if (result.data && result.data.length > 0) {
+      // La respuesta tiene la estructura: { data: { data: [...], created_at, updated_at }, count, timestamp }
+      // Necesitamos acceder a result.data.data para obtener el array de items
+      const serverData = result.data?.data || result.data;
+      
+      if (serverData && Array.isArray(serverData) && serverData.length > 0) {
         const store = this.manager.store(storeName);
         await store.clear();
-        await store.addMany(result.data as Partial<DatabaseItem>[]);
+        await store.addMany(serverData as Partial<DatabaseItem>[]);
+        
+        console.log(`✅ Pulled ${serverData.length} items for ${storeName}`);
+      } else {
+        console.log(`ℹ️ No data to pull for ${storeName}`);
       }
 
       this.status.lastSync = new Date();
       this.status.error = null;
       
-      return result;
+      // Retornar en formato esperado
+      return {
+        success: true,
+        data: serverData,
+        count: Array.isArray(serverData) ? serverData.length : 0,
+        timestamp: result.timestamp || new Date().toISOString()
+      } as SyncResponse<T>;
+      
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Pull failed';
       this.status.error = errorMessage;
@@ -128,6 +142,8 @@ export class SyncController {
       this.status.lastSync = new Date();
       this.status.error = null;
       
+      console.log(`✅ Pushed ${Array.isArray(dataToSync) ? dataToSync.length : 0} items for ${storeName}`);
+      
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Push failed';
@@ -140,11 +156,15 @@ export class SyncController {
 
   /**
    * Bi-directional sync: Pull then Push
+   * IMPORTANTE: Pull primero para obtener datos del servidor,
+   * luego Push para enviar cambios locales
    */
   async syncStore<T = any>(storeName: StoreName): Promise<{
     pull: SyncResponse<T>;
     push: SyncResponse<T>;
   }> {
+    console.log(`🔄 Syncing store: ${storeName}`);
+    
     const pullResult = await this.pullFromServer<T>(storeName);
     const pushResult = await this.pushToServer<T>(storeName);
     
@@ -158,21 +178,29 @@ export class SyncController {
     const stores: StoreName[] = ['products', 'tickets', 'customers'];
     const results: Partial<Record<StoreName, SyncResponse>> = {};
 
+    console.log('🔄 Starting full sync for all stores...');
+
     for (const store of stores) {
       try {
         const pullResult = await this.pullFromServer(store);
         const pushResult = await this.pushToServer(store);
         results[store] = pushResult;
       } catch (error) {
-        console.error(`Error syncing store ${store}:`, error);
+        console.error(`❌ Error syncing store ${store}:`, error);
+        results[store] = {
+          success: false,
+          error: error instanceof Error ? error.message : 'Sync failed'
+        } as SyncResponse;
       }
     }
 
+    console.log('✅ Full sync completed for all stores');
     return results as Record<StoreName, SyncResponse>;
   }
 
   /**
    * Update a single item on server
+   * Usa PUT para actualizar/crear un item individual en el servidor
    */
   async updateItemOnServer<T = any>(
     storeName: StoreName, 
@@ -193,7 +221,10 @@ export class SyncController {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log(`✅ Updated item ${id} in ${storeName} on server`);
+      
+      return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Update failed';
       throw new Error(`Failed to update item on server: ${errorMessage}`);
@@ -202,6 +233,7 @@ export class SyncController {
 
   /**
    * Delete an item from server
+   * ⚠️ ADVERTENCIA: Este endpoint puede tener problemas en el servidor
    */
   async deleteItemFromServer(
     storeName: StoreName, 
@@ -220,9 +252,13 @@ export class SyncController {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log(`✅ Deleted item ${id} from ${storeName} on server`);
+      
+      return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Delete failed';
+      console.error(`❌ Failed to delete item from server: ${errorMessage}`);
       throw new Error(`Failed to delete item from server: ${errorMessage}`);
     }
   }
@@ -244,7 +280,10 @@ export class SyncController {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('✅ Backup created on server');
+      
+      return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Backup failed';
       throw new Error(`Failed to create backup: ${errorMessage}`);
@@ -269,7 +308,10 @@ export class SyncController {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('✅ Backup restored on server');
+      
+      return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Restore failed';
       throw new Error(`Failed to restore backup: ${errorMessage}`);
@@ -281,15 +323,21 @@ export class SyncController {
    */
   startAutoSync(): void {
     if (this.syncInterval) {
-      return; // Already running
+      console.log('⚠️ Auto-sync already running');
+      return;
     }
+    if (!this.config.syncInterval || this.config.syncInterval < 10000) {
+      console.warn('⚠️ syncInterval too low, setting to minimum 10000ms');
+      this.config.syncInterval = 10000; // Minimum 10 seconds
+    }
+    console.log(`🔄 Starting auto-sync every ${this.config.syncInterval / 1000}s`);
 
     this.syncInterval = setInterval(async () => {
       if (this.status.isConnected && !this.status.isPending) {
         try {
           await this.syncAll();
         } catch (error) {
-          console.error('Auto-sync error:', error);
+          console.error('❌ Auto-sync error:', error);
         }
       }
     }, this.config.syncInterval);
@@ -302,6 +350,7 @@ export class SyncController {
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
       this.syncInterval = null;
+      console.log('⏸️ Auto-sync stopped');
     }
   }
 
@@ -310,6 +359,7 @@ export class SyncController {
    */
   destroy(): void {
     this.stopAutoSync();
+    console.log('🧹 SyncController destroyed');
   }
 }
 

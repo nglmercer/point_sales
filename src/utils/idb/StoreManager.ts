@@ -2,6 +2,7 @@
 import { IndexedDBManager, type DatabaseSchema } from "idb-manager";
 import type { DatabaseItem } from "idb-manager";
 import { ws } from "./ws";
+import { syncManager } from "./syncManager";
 ws.on('connect', () => {
   console.log('WebSocket connected');
 });
@@ -335,7 +336,153 @@ export class CustomerService {
 export const productService = new ProductService();
 export const ticketService = new TicketService();
 export const customerService = new CustomerService();
+/**
+ * Enhanced ProductService with auto-sync
+ */
+class SyncedProductService {
+  async addProduct(product: Omit<Product, 'id'>): Promise<Product> {
+    // Add to local IndexedDB
+    const newProduct = await productService.addProduct(product);
+    
+    // Track change for sync
+    await syncManager.trackChange('products', 'create', newProduct);
+    
+    return newProduct;
+  }
 
+  async updateProduct(product: Product): Promise<Product | null> {
+    // Update in local IndexedDB
+    const updated = await productService.updateProduct(product);
+    
+    if (updated) {
+      // Track change for sync
+      await syncManager.trackChange('products', 'update', updated);
+    }
+    
+    return updated;
+  }
+
+  async deleteProduct(id: number): Promise<boolean> {
+    const product = await productService.getProductById(id);
+    const deleted = await productService.deleteProduct(id);
+    
+    if (deleted && product) {
+      // Track change for sync
+      await syncManager.trackChange('products', 'delete', product);
+    }
+    
+    return deleted;
+  }
+
+  async updateStock(productId: number, newStock: number): Promise<void> {
+    const product = await productService.getProductById(productId);
+    if (product) {
+      product.stock = newStock;
+      await this.updateProduct(product);
+    }
+  }
+}
+
+/**
+ * Enhanced TicketService with auto-sync
+ */
+class SyncedTicketService {
+  async saveTicket(ticket: TicketData): Promise<TicketData> {
+    // Save to local IndexedDB
+    const savedTicket = await ticketService.saveTicket(ticket);
+    
+    // Track change for sync
+    await syncManager.trackChange('tickets', 'create', savedTicket);
+    
+    return savedTicket;
+  }
+
+  async updateTicket(ticket: TicketData): Promise<TicketData | null> {
+    const updated = await ticketService.updateTicket(ticket);
+    
+    if (updated) {
+      await syncManager.trackChange('tickets', 'update', updated);
+    }
+    
+    return updated;
+  }
+
+  async deleteTicket(ticketId: string): Promise<boolean> {
+    const ticket = await ticketService.getTicketById(ticketId);
+    const deleted = await ticketService.deleteTicket(ticketId);
+    
+    if (deleted && ticket) {
+      await syncManager.trackChange('tickets', 'delete', ticket);
+    }
+    
+    return deleted;
+  }
+}
+
+/**
+ * Enhanced CustomerService with auto-sync
+ */
+class SyncedCustomerService {
+  async saveCustomer(customer: CustomerData): Promise<CustomerData> {
+    const saved = await customerService.saveCustomer(customer);
+    await syncManager.trackChange('customers', 'create', saved);
+    return saved;
+  }
+
+  async updateCustomer(customer: CustomerData): Promise<CustomerData | null> {
+    const updated = await customerService.updateCustomer(customer);
+    if (updated) {
+      await syncManager.trackChange('customers', 'update', updated);
+    }
+    return updated;
+  }
+
+  async deleteCustomer(dni: string): Promise<boolean> {
+    const customer = await customerService.getCustomerByDni(dni);
+    const deleted = await customerService.deleteCustomer(dni);
+    if (deleted && customer) {
+      await syncManager.trackChange('customers', 'delete', customer);
+    }
+    return deleted;
+  }
+}
+
+// Create synced service instances
+export const syncedProductService = new SyncedProductService();
+export const syncedTicketService = new SyncedTicketService();
+export const syncedCustomerService = new SyncedCustomerService();
+
+async function initializeSync() {
+  try {
+    // Initialize sync manager with config
+    await syncManager.initialize({
+      serverUrl: 'http://localhost:3000',
+      dbName: 'PointSales',
+      autoSync: true,
+      syncInterval: 30000, // 30 seconds
+      backupInterval: 300000 // 5 minutes
+    });
+
+    console.log('✅ SyncManager initialized');
+
+    // Check initial connection
+    const status = syncManager.getStatus();
+    console.log('📊 Sync Status:', status);
+
+    // Perform initial sync
+    await syncManager.syncAll();
+    // Show backup info
+    const backupInfo = syncManager.getBackupInfo();
+    console.log('💾 Backup Info:', backupInfo);
+
+  } catch (error) {
+    console.error('❌ Failed to initialize app:', error);
+  }
+}
+initializeSync();
+setInterval(async () => {
+    await syncManager.syncAll();
+}, 60000); // Every 60 seconds
 // Export initialization function
 export { initializeDatabase, seedData };
 

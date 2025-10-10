@@ -53,7 +53,8 @@ export interface SyncConfig {
   serverUrl: string;
   dbName: string;
   autoSync?: boolean;
-  syncInterval?: number; // in milliseconds
+  syncInterval?: number;
+  backupInterval?: number;
 }
 
 /**
