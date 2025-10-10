@@ -229,7 +229,7 @@ export class ProductService extends BaseService<Product> {
     const product = await this.getProductById(id);
     const manager = await this.getManager();
     const deleted = await manager.store('products').delete(id);
-    
+    console.log("Deleted product:", { deleted,product,id });
     if (deleted && product) {
       await this.trySyncChange('delete', product);
     }

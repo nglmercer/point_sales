@@ -250,11 +250,8 @@ class SyncManager {
     this.saveChangeLog();
     
     console.log(`📝 Cambio registrado: ${action} ${storeName}/${data.id}`);
-    
-    const controller = this.getController();
-    const status = controller.getStatus();
-    
-    if (status.isConnected && this.wsConnected) {
+    console.log("Current sync status:", this.wsConnected);
+    if (this.wsConnected) {
       // Sincronizar inmediatamente si está conectado
       try {
         await this.syncChange(storeName, action, data);

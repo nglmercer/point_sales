@@ -51,7 +51,7 @@ export class SyncController {
   }
 
   /**
-   * 🔥 MEJORADO: Pull inteligente que hace MERGE, no replace
+   * 🔥 CORREGIDO: Pull con validación de datos nulos
    */
   async pullFromServer<T = any>(storeName: StoreName): Promise<SyncResponse<T>> {
     try {
@@ -72,55 +72,9 @@ export class SyncController {
       const result = await response.json();
       const serverData = result.data?.data || result.data;
       
-      if (serverData && Array.isArray(serverData) && serverData.length > 0) {
-        const store = this.manager.store(storeName);
-        
-        // 🔥 CAMBIO CRÍTICO: NO hacer clear(), hacer merge inteligente
-        const localData = await store.getAll();
-        const localMap = new Map(localData.map(item => [item.id, item]));
-        
-        let updated = 0;
-        let created = 0;
-        
-        for (const serverItem of serverData) {
-          const localItem = localMap.get(serverItem.id);
-          
-          if (!localItem) {
-            // Nuevo item del servidor
-            await store.add(serverItem);
-            created++;
-          } else {
-            // Item existe localmente, comparar timestamps
-            const serverTimestamp = (serverItem.updated_at || serverItem.created_at) as string | number | undefined;
-            const localTimestamp = (localItem.updated_at || localItem.created_at) as string | number | undefined;
-            const serverTime = new Date(serverTimestamp || 0);
-            const localTime = new Date(localTimestamp || 0);
-
-            if (serverTime > localTime) {
-              // Servidor tiene versión más reciente
-              await store.update(serverItem);
-              updated++;
-            }
-            // Si local es más reciente, no hacer nada (se enviará en el push)
-          }
-        }
-        
-        console.log(`✅ Pull completado para ${storeName}: ${created} nuevos, ${updated} actualizados`);
-        
-        this.status.lastSync = new Date();
-        this.status.error = null;
-        
-        return {
-          success: true,
-          data: serverData,
-          count: serverData.length,
-          timestamp: result.timestamp || new Date().toISOString(),
-          stats: { created, updated }
-        } as SyncResponse<T>;
-        
-      } else {
-        console.log(`ℹ️ No hay datos en el servidor para ${storeName}`);
-        
+      // 🔥 VALIDACIÓN: Verificar que serverData existe y es array válido
+      if (!serverData || !Array.isArray(serverData)) {
+        console.warn(`⚠️ Servidor retornó datos inválidos para ${storeName}`);
         return {
           success: true,
           data: [] as any,
@@ -128,6 +82,70 @@ export class SyncController {
           timestamp: new Date().toISOString()
         } as SyncResponse<T>;
       }
+
+      // 🔥 VALIDACIÓN: Filtrar items nulos o inválidos
+      const validServerData = serverData.filter(item => {
+        if (!item || typeof item !== 'object') {
+          console.warn('⚠️ Item inválido filtrado:', item);
+          return false;
+        }
+        if (!item.id) {
+          console.warn('⚠️ Item sin ID filtrado:', item);
+          return false;
+        }
+        return true;
+      });
+
+      if (validServerData.length === 0) {
+        console.log(`ℹ️ No hay datos válidos en el servidor para ${storeName}`);
+        return {
+          success: true,
+          data: [] as any,
+          count: 0,
+          timestamp: new Date().toISOString()
+        } as SyncResponse<T>;
+      }
+
+      const store = this.manager.store(storeName);
+      const localData = await store.getAll();
+      const localMap = new Map(localData.map(item => [item.id, item]));
+      
+      let updated = 0;
+      let created = 0;
+      
+      for (const serverItem of validServerData) {
+        const localItem = localMap.get(serverItem.id);
+        
+        if (!localItem) {
+          // Nuevo item del servidor
+          await store.add(serverItem);
+          created++;
+        } else {
+          // Comparar timestamps
+          const serverTimestamp = serverItem.updated_at || serverItem.created_at || 0;
+          const localTimestamp = localItem.updated_at || localItem.created_at || 0;
+          const serverTime = new Date(serverTimestamp);
+          const localTime = new Date(String(localTimestamp));
+
+          if (serverTime > localTime) {
+            await store.update(serverItem);
+            updated++;
+          }
+        }
+      }
+      
+      console.log(`✅ Pull completado para ${storeName}: ${created} nuevos, ${updated} actualizados`);
+      
+      this.status.lastSync = new Date();
+      this.status.error = null;
+      
+      return {
+        success: true,
+        data: validServerData,
+        count: validServerData.length,
+        timestamp: result.timestamp || new Date().toISOString(),
+        stats: { created, updated }
+      } as SyncResponse<T>;
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Pull failed';
@@ -139,13 +157,12 @@ export class SyncController {
   }
 
   /**
-   * 🔥 MEJORADO: Push solo envía cambios locales más recientes
+   * 🔥 MEJORADO: Push con clientId para evitar echo
    */
   async pushToServer<T = any>(storeName: StoreName, data?: T[]): Promise<SyncResponse<T>> {
     try {
       this.status.isPending = true;
       
-      // Obtener datos locales
       const dataToSync = data || await this.manager.store(storeName).getAll();
       
       if (!dataToSync || dataToSync.length === 0) {
@@ -192,25 +209,15 @@ export class SyncController {
     }
   }
 
-  /**
-   * 🔥 MEJORADO: Sync bidireccional inteligente
-   * 1. Pull (merge con local)
-   * 2. Push (enviar cambios locales)
-   * 3. Pull final (asegurar que tenemos últimos cambios)
-   */
   async syncStore<T = any>(storeName: StoreName): Promise<{
     pull: SyncResponse<T>;
     push: SyncResponse<T>;
   }> {
     console.log(`🔄 Sincronizando store: ${storeName}`);
     
-    // 1. Pull primero (obtener cambios del servidor)
     const pullResult = await this.pullFromServer<T>(storeName);
-    
-    // 2. Push (enviar cambios locales)
     const pushResult = await this.pushToServer<T>(storeName);
     
-    // 3. Pull final si el push generó conflictos resueltos en servidor
     if (pushResult.conflicts && pushResult.conflicts > 0) {
       console.log(`⚠️ Detectados ${pushResult.conflicts} conflictos, haciendo pull final...`);
       await this.pullFromServer<T>(storeName);
@@ -219,9 +226,6 @@ export class SyncController {
     return { pull: pullResult, push: pushResult };
   }
 
-  /**
-   * Sincronizar todos los stores
-   */
   async syncAll(): Promise<Record<StoreName, SyncResponse>> {
     const stores: StoreName[] = ['products', 'tickets', 'customers'];
     const results: Partial<Record<StoreName, SyncResponse>> = {};
@@ -245,9 +249,6 @@ export class SyncController {
     return results as Record<StoreName, SyncResponse>;
   }
 
-  /**
-   * Actualizar un item individual en el servidor
-   */
   async updateItemOnServer<T = any>(
     storeName: StoreName, 
     id: string | number, 
@@ -280,9 +281,6 @@ export class SyncController {
     }
   }
 
-  /**
-   * Eliminar un item del servidor
-   */
   async deleteItemFromServer(
     storeName: StoreName, 
     id: string | number
@@ -310,9 +308,6 @@ export class SyncController {
     }
   }
 
-  /**
-   * Crear backup en el servidor
-   */
   async createBackup(): Promise<BackupResponse> {
     try {
       const url = `${this.config.serverUrl}/api/backup/${this.config.dbName}`;
@@ -337,9 +332,6 @@ export class SyncController {
     }
   }
 
-  /**
-   * Restaurar desde backup
-   */
   async restoreBackup(backup: Record<string, any[]>, overwrite = false): Promise<SyncResponse> {
     try {
       const url = `${this.config.serverUrl}/api/backup/${this.config.dbName}/restore`;
@@ -365,9 +357,6 @@ export class SyncController {
     }
   }
 
-  /**
-   * Obtener o crear ID único de cliente
-   */
   private getClientId(): string {
     let clientId = localStorage.getItem('sync_client_id');
     if (!clientId) {
@@ -377,9 +366,6 @@ export class SyncController {
     return clientId;
   }
 
-  /**
-   * Iniciar sincronización automática
-   */
   startAutoSync(): void {
     if (this.syncInterval) {
       console.log('⚠️ Auto-sync ya está activo');
@@ -404,9 +390,6 @@ export class SyncController {
     }, this.config.syncInterval);
   }
 
-  /**
-   * Detener sincronización automática
-   */
   stopAutoSync(): void {
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
@@ -415,9 +398,6 @@ export class SyncController {
     }
   }
 
-  /**
-   * Limpiar recursos
-   */
   destroy(): void {
     this.stopAutoSync();
     console.log('🧹 SyncController destruido');
