@@ -62,12 +62,19 @@ export interface SyncConfig {
  */
 export interface SyncResponse<T = any> {
   success: boolean;
-  data?: T[];
-  synced?: number;
+  data?: T | T[];
   count?: number;
-  timestamp: string;
+  timestamp?: string;
   error?: string;
+  stats?: {
+    created?: number;
+    updated?: number;
+    deleted?: number;
+  };
+  conflicts?: number; // Add this property
+  message?: string;
 }
+
 
 /**
  * Backup Response

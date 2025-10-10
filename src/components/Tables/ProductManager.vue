@@ -57,7 +57,7 @@ const tableColumns = [
   { 
     key: 'price', 
     label: 'Precio',
-    formatter: (price: number) => `$${price.toFixed(2)}`
+    formatter: (price: number) => `$${price}`
   },
   { key: 'category', label: 'Categoría' },
   { 

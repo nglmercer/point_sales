@@ -1,18 +1,18 @@
 // src/utils/storeManager.js
-import { IndexedDBManager, type DatabaseSchema } from "idb-manager";
-import type { DatabaseItem } from "idb-manager";
+import { IndexedDBManager, type DatabaseSchema, type DatabaseItem } from "idb-manager";
 import { ws } from "./ws";
 import { syncManager } from "./syncManager";
-ws.on('connect', () => {
-  console.log('WebSocket connected');
-});
-ws.on('disconnect', () => {
-  console.log('WebSocket disconnected');
-});
+import { seedData } from "./samples";
+
+// WebSocket setup
+ws.on('connect', () => console.log('WebSocket connected'));
+ws.on('disconnect', () => console.log('WebSocket disconnected'));
 ws.on('sync', (...args) => {
   console.log('Received sync data:', args);
-  // Handle incoming sync data (e.g., update local IndexedDB)
+  // Handle incoming sync data
 });
+
+// Database Schema
 const pointSalesSchema: DatabaseSchema = {
   name: 'PointSales',
   version: 2,
@@ -54,10 +54,13 @@ const pointSalesSchema: DatabaseSchema = {
   ]
 };
 
-// Initialize the manager with the complete schema
-const dbManager = new IndexedDBManager(pointSalesSchema,{autoInit:true});
+// Initialize database manager
+const dbManager = new IndexedDBManager(pointSalesSchema, { autoInit: true });
 
-// Product interface
+// ============================================
+// INTERFACES
+// ============================================
+
 export interface Product extends DatabaseItem {
   id: number;
   name: string;
@@ -66,15 +69,13 @@ export interface Product extends DatabaseItem {
   fallback: string;
   category: string;
   description?: string;
-  stock?: number | null; // Stock is optional - null means no stock tracking
+  stock?: number | null;
 }
 
-// Cart item interface
 export interface CartItem extends Product {
   quantity: number;
 }
 
-// Customer data interface
 export interface CustomerData extends DatabaseItem {
   dni: string;
   name: string;
@@ -83,7 +84,6 @@ export interface CustomerData extends DatabaseItem {
   orderType?: 'dine-in' | 'takeout' | 'delivery' | '';
 }
 
-// Ticket data interface
 export interface TicketData extends DatabaseItem {
   ticketID: string;
   customerData: CustomerData;
@@ -95,67 +95,35 @@ export interface TicketData extends DatabaseItem {
   qrCodeDataURL?: string;
 }
 
-// Seed data
-const seedData = {
-  burgers: [
-    { id: 1, name: "Quarter Pounder With Cheese", price: 3.99, image: "/images/quarter-pounder-cheese.svg", fallback: "🍔", category: "burgers", stock: 15 },
-    { id: 2, name: "Double Quarter Pounder With Cheese", price: 4.79, image: "/images/double-quarter-pounder.jpg", fallback: "🍔", category: "burgers", stock: 8 },
-    { id: 3, name: "Quarter Pounder With Cheese Deluxe", price: 4.29, image: "/images/quarter-pounder-deluxe.jpg", fallback: "🍔", category: "burgers", stock: 0 }, // Out of stock
-    { id: 4, name: "Big Mac", price: 3.99, image: "/images/big-mac.jpg", fallback: "🍔", category: "burgers", stock: 20 },
-    { id: 5, name: "McDouble", price: 1.99, image: "/images/mcdouble.jpg", fallback: "🍔", category: "burgers" }, // No stock tracking
-    { id: 6, name: "Quarter Pounder With Cheese Bacon", price: 4.99, image: "/images/quarter-pounder-bacon.jpg", fallback: "🍔", category: "burgers", stock: 5 }
-  ],
-  sandwiches: [
-    { id: 7, name: "Chicken Sandwich", price: 4.49, image: "/images/chicken-sandwich.jpg", fallback: "🥪", category: "sandwiches", stock: 12 },
-    { id: 8, name: "Fish Sandwich", price: 3.79, image: "/images/fish-sandwich.jpg", fallback: "🥪", category: "sandwiches", stock: 3 }
-  ],
-  sides: [
-    { id: 9, name: "Large Fries", price: 2.99, image: "/images/large-fries.svg", fallback: "🍟", category: "sides", stock: 25 },
-    { id: 10, name: "Medium Fries", price: 2.49, image: "/images/medium-fries.jpg", fallback: "🍟", category: "sides", stock: 18 },
-    { id: 11, name: "Small Fries", price: 1.99, image: "/images/small-fries.jpg", fallback: "🍟", category: "sides" } // No stock tracking
-  ],
-  drinks: [
-    { id: 12, name: "Medium Soda", price: 1.99, image: "/images/medium-soda.svg", fallback: "🥤", category: "drinks", stock: 50 },
-    { id: 13, name: "Large Soda", price: 2.29, image: "/images/large-soda.jpg", fallback: "🥤", category: "drinks", stock: 30 },
-    { id: 14, name: "M&Ms McFlurry", price: 3.99, image: "/images/mcflurry.jpg", fallback: "🍦", category: "drinks", stock: 0 } // Out of stock
-  ]
-};
+// ============================================
+// CONFIGURACIÓN DE SINCRONIZACIÓN
+// ============================================
 
 /**
- * Initialize the database and seed with initial data if empty
+ * Flag para habilitar/deshabilitar sincronización automática
+ * Útil para desarrollo o para deshabilitar temporalmente
  */
-async function initializeDatabase() {
-  const manager = await dbManager;
-  
-  // Get store proxies
-  const productStore = manager.store('products');
-  const ticketStore = manager.store('tickets');
-  const customerStore = manager.store('customers');
-  
-  // Check if products store is empty and seed if necessary
-  const existingProducts = await productStore.getAll();
-  if (!existingProducts || existingProducts.length === 0) {
-    console.log("Products store is empty, seeding with initial products.");
-    const allProductsToSeed = Object.values(seedData).flat();
-    await productStore.addMany(allProductsToSeed);
-    console.log("Products seeded successfully.");
-  } else {
-    console.log("Products store already contains data, skipping seed.");
-  }
-  
-  return {
-    productStore,
-    ticketStore,
-    customerStore,
-    manager
-  }
+let autoSyncEnabled = true;
+
+export function setAutoSync(enabled: boolean) {
+  autoSyncEnabled = enabled;
+  console.log(`🔄 Auto-sync ${enabled ? 'enabled' : 'disabled'}`);
 }
 
+export function isAutoSyncEnabled(): boolean {
+  return autoSyncEnabled;
+}
+
+// ============================================
+// SERVICIO BASE CON SINCRONIZACIÓN
+// ============================================
+
 /**
- * Product Store Operations
+ * Clase base para servicios con sincronización automática
  */
-export class ProductService {
-  private manager: IndexedDBManager | null = null;
+abstract class BaseService<T extends DatabaseItem> {
+  protected manager: IndexedDBManager | null = null;
+  protected abstract storeName: 'products' | 'tickets' | 'customers';
   
   async getManager() {
     if (!this.manager) {
@@ -163,6 +131,39 @@ export class ProductService {
     }
     return this.manager;
   }
+
+  /**
+   * Intenta sincronizar un cambio, pero no falla si no puede
+   */
+  protected async trySyncChange(
+    action: 'create' | 'update' | 'delete',
+    data: T
+  ): Promise<void> {
+    if (!autoSyncEnabled) {
+      console.log(`⏸️ Auto-sync disabled, skipping sync for ${this.storeName}`);
+      return;
+    }
+
+    try {
+      // Verifica si syncManager está inicializado
+      if (syncManager.isInitialized()) {
+        await syncManager.trackChange(this.storeName, action, data);
+      } else {
+        console.warn(`⚠️ SyncManager not initialized, change not synced`);
+      }
+    } catch (error) {
+      console.error(`❌ Failed to sync ${action} on ${this.storeName}:`, error);
+      // No lanzamos el error, permitimos que la operación local continúe
+    }
+  }
+}
+
+// ============================================
+// PRODUCT SERVICE (Unificado con Sync)
+// ============================================
+
+export class ProductService extends BaseService<Product> {
+  protected storeName = 'products' as const;
   
   async getAllProducts(): Promise<Product[]> {
     const manager = await this.getManager();
@@ -179,22 +180,72 @@ export class ProductService {
     return manager.store('products').get(id) as Promise<Product | null>;
   }
   
+  /**
+   * Añade un nuevo producto (con auto-sync)
+   */
   async addProduct(product: Omit<Product, 'id'>): Promise<Product> {
     const manager = await this.getManager();
-    return manager.store('products').add(product) as Promise<Product>;
+    const newProduct = await manager.store('products').add(product) as Product;
+    
+    // Sincronizar cambio
+    await this.trySyncChange('create', newProduct);
+    
+    return newProduct;
   }
+
+  /**
+   * Guarda o actualiza un producto (con auto-sync)
+   */
   async saveProduct(product: Product): Promise<Product> {
     const manager = await this.getManager();
-    return manager.store('products').add(product) as Promise<Product>;
+    const existing = await this.getProductById(product.id);
+    
+    const savedProduct = await manager.store('products').add(product) as Product;
+    
+    // Sincronizar como create o update según corresponda
+    await this.trySyncChange(existing ? 'update' : 'create', savedProduct);
+    
+    return savedProduct;
   }
+
+  /**
+   * Actualiza un producto existente (con auto-sync)
+   */
   async updateProduct(product: Product): Promise<Product | null> {
     const manager = await this.getManager();
-    return manager.store('products').update(product) as Promise<Product | null>;
+    const updated = await manager.store('products').update(product) as Product | null;
+    
+    if (updated) {
+      await this.trySyncChange('update', updated);
+    }
+    
+    return updated;
   }
   
+  /**
+   * Elimina un producto (con auto-sync)
+   */
   async deleteProduct(id: number): Promise<boolean> {
+    const product = await this.getProductById(id);
     const manager = await this.getManager();
-    return manager.store('products').delete(id);
+    const deleted = await manager.store('products').delete(id);
+    
+    if (deleted && product) {
+      await this.trySyncChange('delete', product);
+    }
+    
+    return deleted;
+  }
+
+  /**
+   * Actualiza el stock de un producto (con auto-sync)
+   */
+  async updateStock(productId: number, newStock: number): Promise<void> {
+    const product = await this.getProductById(productId);
+    if (product) {
+      product.stock = newStock;
+      await this.updateProduct(product);
+    }
   }
   
   async searchProducts(query: string): Promise<Product[]> {
@@ -209,22 +260,23 @@ export class ProductService {
   }
 }
 
-/**
- * Ticket Store Operations
- */
-export class TicketService {
-  private manager: IndexedDBManager | null = null;
+// ============================================
+// TICKET SERVICE (Unificado con Sync)
+// ============================================
+
+export class TicketService extends BaseService<TicketData> {
+  protected storeName = 'tickets' as const;
   
-  async getManager() {
-    if (!this.manager) {
-      this.manager = await dbManager;
-    }
-    return this.manager;
-  }
-  
+  /**
+   * Guarda un nuevo ticket (con auto-sync)
+   */
   async saveTicket(ticket: TicketData): Promise<TicketData> {
     const manager = await this.getManager();
-    return manager.store('tickets').add(ticket) as Promise<TicketData>;
+    const savedTicket = await manager.store('tickets').add(ticket) as TicketData;
+    
+    await this.trySyncChange('create', savedTicket);
+    
+    return savedTicket;
   }
   
   async getTicketById(ticketId: string): Promise<TicketData | null> {
@@ -249,19 +301,37 @@ export class TicketService {
   }
   
   async getTicketsByOrderType(orderType: string): Promise<TicketData[]> {
-    const manager = await this.getManager();
     const allTickets = await this.getAllTickets();
     return allTickets.filter(ticket => ticket.customerData?.orderType === orderType);
   }
   
+  /**
+   * Actualiza un ticket (con auto-sync)
+   */
   async updateTicket(ticket: TicketData): Promise<TicketData | null> {
     const manager = await this.getManager();
-    return manager.store('tickets').update(ticket) as Promise<TicketData | null>;
+    const updated = await manager.store('tickets').update(ticket) as TicketData | null;
+    
+    if (updated) {
+      await this.trySyncChange('update', updated);
+    }
+    
+    return updated;
   }
   
+  /**
+   * Elimina un ticket (con auto-sync)
+   */
   async deleteTicket(ticketId: string): Promise<boolean> {
+    const ticket = await this.getTicketById(ticketId);
     const manager = await this.getManager();
-    return manager.store('tickets').delete(ticketId);
+    const deleted = await manager.store('tickets').delete(ticketId);
+    
+    if (deleted && ticket) {
+      await this.trySyncChange('delete', ticket);
+    }
+    
+    return deleted;
   }
   
   async getTicketStats() {
@@ -282,22 +352,23 @@ export class TicketService {
   }
 }
 
-/**
- * Customer Store Operations
- */
-export class CustomerService {
-  private manager: IndexedDBManager | null = null;
+// ============================================
+// CUSTOMER SERVICE (Unificado con Sync)
+// ============================================
+
+export class CustomerService extends BaseService<CustomerData> {
+  protected storeName = 'customers' as const;
   
-  async getManager() {
-    if (!this.manager) {
-      this.manager = await dbManager;
-    }
-    return this.manager;
-  }
-  
+  /**
+   * Guarda un nuevo cliente (con auto-sync)
+   */
   async saveCustomer(customer: CustomerData): Promise<CustomerData> {
     const manager = await this.getManager();
-    return manager.store('customers').add(customer) as Promise<CustomerData>;
+    const saved = await manager.store('customers').add(customer) as CustomerData;
+    
+    await this.trySyncChange('create', saved);
+    
+    return saved;
   }
   
   async getCustomerByDni(dni: string): Promise<CustomerData | null> {
@@ -307,17 +378,36 @@ export class CustomerService {
   
   async getAllCustomers(): Promise<CustomerData[]> {
     const manager = await this.getManager();
-    return manager.store('customers').getAll() as Promise<CustomerData[]>
+    return manager.store('customers').getAll() as Promise<CustomerData[]>;
   }
   
+  /**
+   * Actualiza un cliente (con auto-sync)
+   */
   async updateCustomer(customer: CustomerData): Promise<CustomerData | null> {
     const manager = await this.getManager();
-    return manager.store('customers').update(customer) as Promise<CustomerData | null>;
+    const updated = await manager.store('customers').update(customer) as CustomerData | null;
+    
+    if (updated) {
+      await this.trySyncChange('update', updated);
+    }
+    
+    return updated;
   }
   
+  /**
+   * Elimina un cliente (con auto-sync)
+   */
   async deleteCustomer(dni: string): Promise<boolean> {
+    const customer = await this.getCustomerByDni(dni);
     const manager = await this.getManager();
-    return manager.store('customers').delete(dni);
+    const deleted = await manager.store('customers').delete(dni);
+    
+    if (deleted && customer) {
+      await this.trySyncChange('delete', customer);
+    }
+    
+    return deleted;
   }
   
   async searchCustomers(query: string): Promise<CustomerData[]> {
@@ -332,159 +422,58 @@ export class CustomerService {
   }
 }
 
-// Create service instances
+// ============================================
+// INSTANCIAS DE SERVICIOS (Solo una versión)
+// ============================================
+
 export const productService = new ProductService();
 export const ticketService = new TicketService();
 export const customerService = new CustomerService();
-/**
- * Enhanced ProductService with auto-sync
- */
-class SyncedProductService {
-  async addProduct(product: Omit<Product, 'id'>): Promise<Product> {
-    // Add to local IndexedDB
-    const newProduct = await productService.addProduct(product);
-    
-    // Track change for sync
-    await syncManager.trackChange('products', 'create', newProduct);
-    
-    return newProduct;
-  }
 
-  async updateProduct(product: Product): Promise<Product | null> {
-    // Update in local IndexedDB
-    const updated = await productService.updateProduct(product);
-    
-    if (updated) {
-      // Track change for sync
-      await syncManager.trackChange('products', 'update', updated);
-    }
-    
-    return updated;
-  }
+// ============================================
+// INICIALIZACIÓN
+// ============================================
 
-  async deleteProduct(id: number): Promise<boolean> {
-    const product = await productService.getProductById(id);
-    const deleted = await productService.deleteProduct(id);
-    
-    if (deleted && product) {
-      // Track change for sync
-      await syncManager.trackChange('products', 'delete', product);
-    }
-    
-    return deleted;
-  }
-
-  async updateStock(productId: number, newStock: number): Promise<void> {
-    const product = await productService.getProductById(productId);
-    if (product) {
-      product.stock = newStock;
-      await this.updateProduct(product);
-    }
-  }
+async function initializeDatabase() {
+  const manager = await dbManager;
+  
+  const productStore = manager.store('products');
+  const ticketStore = manager.store('tickets');
+  const customerStore = manager.store('customers');
+  
+  return {
+    productStore,
+    ticketStore,
+    customerStore,
+    manager
+  };
 }
-
-/**
- * Enhanced TicketService with auto-sync
- */
-class SyncedTicketService {
-  async saveTicket(ticket: TicketData): Promise<TicketData> {
-    // Save to local IndexedDB
-    const savedTicket = await ticketService.saveTicket(ticket);
-    
-    // Track change for sync
-    await syncManager.trackChange('tickets', 'create', savedTicket);
-    
-    return savedTicket;
-  }
-
-  async updateTicket(ticket: TicketData): Promise<TicketData | null> {
-    const updated = await ticketService.updateTicket(ticket);
-    
-    if (updated) {
-      await syncManager.trackChange('tickets', 'update', updated);
-    }
-    
-    return updated;
-  }
-
-  async deleteTicket(ticketId: string): Promise<boolean> {
-    const ticket = await ticketService.getTicketById(ticketId);
-    const deleted = await ticketService.deleteTicket(ticketId);
-    
-    if (deleted && ticket) {
-      await syncManager.trackChange('tickets', 'delete', ticket);
-    }
-    
-    return deleted;
-  }
-}
-
-/**
- * Enhanced CustomerService with auto-sync
- */
-class SyncedCustomerService {
-  async saveCustomer(customer: CustomerData): Promise<CustomerData> {
-    const saved = await customerService.saveCustomer(customer);
-    await syncManager.trackChange('customers', 'create', saved);
-    return saved;
-  }
-
-  async updateCustomer(customer: CustomerData): Promise<CustomerData | null> {
-    const updated = await customerService.updateCustomer(customer);
-    if (updated) {
-      await syncManager.trackChange('customers', 'update', updated);
-    }
-    return updated;
-  }
-
-  async deleteCustomer(dni: string): Promise<boolean> {
-    const customer = await customerService.getCustomerByDni(dni);
-    const deleted = await customerService.deleteCustomer(dni);
-    if (deleted && customer) {
-      await syncManager.trackChange('customers', 'delete', customer);
-    }
-    return deleted;
-  }
-}
-
-// Create synced service instances
-export const syncedProductService = new SyncedProductService();
-export const syncedTicketService = new SyncedTicketService();
-export const syncedCustomerService = new SyncedCustomerService();
 
 async function initializeSync() {
   try {
-    // Initialize sync manager with config
     await syncManager.initialize({
       serverUrl: 'http://localhost:3000',
       dbName: 'PointSales',
       autoSync: true,
-      syncInterval: 30000, // 30 seconds
-      backupInterval: 300000 // 5 minutes
+      syncInterval: 30000, // 30 segundos
+      backupInterval: 300000 // 5 minutos
     });
 
     console.log('✅ SyncManager initialized');
 
-    // Check initial connection
     const status = syncManager.getStatus();
     console.log('📊 Sync Status:', status);
 
-    // Perform initial sync
     await syncManager.syncAll();
-    // Show backup info
+    
     const backupInfo = syncManager.getBackupInfo();
     console.log('💾 Backup Info:', backupInfo);
 
   } catch (error) {
-    console.error('❌ Failed to initialize app:', error);
+    console.error('❌ Failed to initialize sync:', error);
   }
 }
-initializeSync();
-setInterval(async () => {
-    await syncManager.syncAll();
-}, 60000); // Every 60 seconds
-// Export initialization function
-export { initializeDatabase, seedData };
 
-// Export the manager for direct access if needed
-export { dbManager };
+// Inicializar sincronización
+initializeSync();
+export { initializeDatabase, seedData, dbManager };
