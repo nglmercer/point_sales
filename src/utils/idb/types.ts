@@ -64,8 +64,10 @@ export interface SyncResponse<T = any> {
   success: boolean;
   data?: T | T[];
   count?: number;
+  version?: number;
   timestamp?: string;
   error?: string;
+  needsFullSync?: boolean;
   stats?: {
     created?: number;
     updated?: number;

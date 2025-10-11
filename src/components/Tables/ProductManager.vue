@@ -79,7 +79,11 @@ const tableActions = [
 
 // --- Ciclo de Vida ---
 onMounted(async () => {
-  await initializeDatabase(); // Asegura que la DB esté lista y sembrada
+  const {manager} = await initializeDatabase(); // Asegura que la DB esté lista y sembrada
+  const allEvents = ['add', 'update', 'delete', 'clear','import'];
+  allEvents.forEach(event => {
+    manager.on(event, fetchProducts);
+  });
   await fetchProducts();
 });
 
