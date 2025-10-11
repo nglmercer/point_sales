@@ -50,7 +50,7 @@ export interface TicketData extends DatabaseItem {
  * Sync Configuration
  */
 export interface SyncConfig {
-  serverUrl: string;
+  serverUrl?: string;
   dbName: string;
   autoSync?: boolean;
   syncInterval?: number;

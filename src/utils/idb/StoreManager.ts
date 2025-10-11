@@ -1,8 +1,9 @@
 // src/utils/storeManager.js
 import { IndexedDBManager, type DatabaseSchema, type DatabaseItem } from "idb-manager";
 import { ws } from "./ws";
-import { syncManager } from "./syncManager";
-import { seedData } from "./samples";
+import { syncController } from "../fetch/sync";
+/* import { syncManager } from "./syncManager";
+ */import { seedData } from "./samples";
 
 // WebSocket setup
 ws.on('connect', () => console.log('WebSocket connected'));
@@ -146,11 +147,11 @@ abstract class BaseService<T extends DatabaseItem> {
 
     try {
       // Verifica si syncManager está inicializado
-      if (syncManager.isInitialized()) {
+/*       if (syncManager.isInitialized()) {
         await syncManager.trackChange(this.storeName, action, data);
       } else {
         console.warn(`⚠️ SyncManager not initialized, change not synced`);
-      }
+      } */
     } catch (error) {
       console.error(`❌ Failed to sync ${action} on ${this.storeName}:`, error);
       // No lanzamos el error, permitimos que la operación local continúe
@@ -448,32 +449,4 @@ async function initializeDatabase() {
     manager
   };
 }
-
-async function initializeSync() {
-  try {
-    await syncManager.initialize({
-      serverUrl: 'http://localhost:3000',
-      dbName: 'PointSales',
-      autoSync: true,
-      syncInterval: 30000, // 30 segundos
-      backupInterval: 300000 // 5 minutos
-    });
-
-    console.log('✅ SyncManager initialized');
-
-    const status = syncManager.getStatus();
-    console.log('📊 Sync Status:', status);
-
-    await syncManager.syncAll();
-    
-    const backupInfo = syncManager.getBackupInfo();
-    console.log('💾 Backup Info:', backupInfo);
-
-  } catch (error) {
-    console.error('❌ Failed to initialize sync:', error);
-  }
-}
-
-// Inicializar sincronización
-initializeSync();
 export { initializeDatabase, seedData, dbManager };
