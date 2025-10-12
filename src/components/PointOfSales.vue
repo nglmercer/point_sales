@@ -14,7 +14,7 @@ import '@litcomponents/dialog.js'
 import '@litcomponents/CInput.js'
 import { productService, seedData,initializeDatabase,ticketService } from '@/utils/idb/StoreManager.js'
 import type{ CartItem,CustomerData,TicketData,Product as DBProduct, } from '@/utils/idb/StoreManager.js'
-
+import { emitter } from '@/utils/Emitter.js'
 // --- Type Definitions ---
 interface Category {
   id: string;
@@ -385,11 +385,7 @@ onMounted(async () => {
   await loadProductsFromDB();
   const initalData = await productService.getAllProducts()
   handleDatabaseUpdate(initalData);
-  const manager = await productService.getManager();
-  manager.on('add', handleDatabaseUpdate);
-  manager.on('update', handleDatabaseUpdate);
-  manager.on('delete', handleDatabaseUpdate);
-  manager.on('clear', handleDatabaseUpdate); // También es bueno escuchar el evento de limpiar
+  emitter.on('sync:change', handleDatabaseUpdate);
   // Populate products
   productsByCategory.value = seedData;
   allProducts.value = Object.values(seedData).flat();
@@ -400,11 +396,7 @@ onMounted(async () => {
 })
 
 onUnmounted(async () => {
-  const manager = await productService.getManager();
-  manager.off('add', handleDatabaseUpdate);
-  manager.off('update', handleDatabaseUpdate);
-  manager.off('delete', handleDatabaseUpdate);
-  manager.off('clear', handleDatabaseUpdate);
+  emitter.off('sync:change', handleDatabaseUpdate);
   
   if (resizeListener.value) {
     window.removeEventListener('resize', resizeListener.value)

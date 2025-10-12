@@ -30,13 +30,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick } from 'vue';
+import { ref, onMounted, computed, nextTick, onUnmounted } from 'vue';
 import { productService, initializeDatabase, type Product } from '@/utils/idb/StoreManager';
 import DataTable from '@/components/Tables/DataTable.vue';
 import MainForm from '@/components/Forms/MainForm.vue'; // Asume que MainForm está en esta ruta
 import {DlgCont} from '@/litcomponents/dialog.ts';
 import { CInput } from '@/litcomponents/CInput';
-
+import { emitter } from '@/utils/Emitter';
 // --- Estado Reactivo ---
 const products = ref<Product[]>([]);
 const isLoading = ref(true);
@@ -80,13 +80,13 @@ const tableActions = [
 // --- Ciclo de Vida ---
 onMounted(async () => {
   const {manager} = await initializeDatabase(); // Asegura que la DB esté lista y sembrada
-  const allEvents = ['add', 'update', 'delete', 'clear','import'];
-  allEvents.forEach(event => {
-    manager.on(event, fetchProducts);
-  });
+  emitter.on('sync:change', fetchProducts);
+
   await fetchProducts();
 });
-
+onUnmounted(() => {
+  emitter.off('sync:change', fetchProducts);
+});
 // --- Métodos ---
 async function fetchProducts() {
   isLoading.value = true;
