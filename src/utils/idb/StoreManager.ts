@@ -5,6 +5,15 @@ import { syncManager } from "./syncManager";
 import { emitter } from "../Emitter";
 import { seedData } from "./samples";
 import { syncController } from "../fetch/sync";
+const filterByValidValues = (array: any[], minValidValues: number) => {
+  return array.filter(item => {
+    const values = Object.values(item);
+
+    const validValuesCount = values.filter(v => v != null).length;
+
+    return validValuesCount >= minValidValues;
+  });
+};
 ws.on('sync:change', async (data) => {
   // 1. Validación de entrada más robusta
   if (!data || typeof data.action !== 'string' || typeof data.storeName !== 'string' || !data.data) {
@@ -14,14 +23,17 @@ ws.on('sync:change', async (data) => {
 
   try {
     // 2. Obtener el manejador de la base de datos
-    const { manager } = await initializeDatabase();
+    const { manager,productStore } = await initializeDatabase();
     
     // 3. Seleccionar el "store" dinámicamente para evitar repetición
     const store = manager.store(data.storeName);
     const updateData = await syncController.getSync(data.storeName);
+
+    const filteredData = filterByValidValues(updateData.data, 3);
     store.clear();
-    store.addMany(updateData.data);
+    store.addMany(filteredData);
     emitter.emit('sync:change', data);
+    return
     if (!store) {
       console.warn(`Store no encontrado: ${data.storeName}`);
       return;
@@ -475,7 +487,11 @@ async function initializeDatabase() {
   const taskStore = taskmanager.store('sync_tasks');
   
   syncManager.initialize();
-  
+  const updateData = await syncController.getSync('products');
+
+  const filteredData = filterByValidValues(updateData.data, 3);
+  productStore.clear();
+  productStore.addMany(filteredData);
   console.log('✅ Database and sync initialized');
   
   return {

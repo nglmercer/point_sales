@@ -32,7 +32,7 @@ class SyncManager {
             const taskStore = taskManager.store('sync_tasks');
             const pendingTasks = await taskStore.getAll() as StoreTask[];
 
-            if (pendingTasks.length === 0) {
+            if (!Array.isArray(pendingTasks) || pendingTasks.length === 0) {
                 console.log('✅ Sync queue is empty.');
                 return;
             }
