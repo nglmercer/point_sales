@@ -1,5 +1,5 @@
 <template>
-  <div :class="['data-table-container', { dark: darkmode }]">
+  <div :class="['data-table-container overflow-auto', { dark: darkmode }]">
     <div v-if="isLoading" class="state-overlay">
       <p>Cargando datos...</p>
     </div>
@@ -115,7 +115,9 @@ function handleActionClick(eventName: string, item: any) {
   position: relative;
   min-height: 150px;
 }
-
+.overflow-auto {
+  overflow: auto;
+}
 .data-table-container.dark {
   --bg-color: #1a1a1a;
   --text-color: #e0e0e0;

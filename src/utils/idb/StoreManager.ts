@@ -23,10 +23,10 @@ ws.on('sync:change', async (data) => {
 
   try {
     // 2. Obtener el manejador de la base de datos
-    const { manager,productStore } = await initializeDatabase();
+    const { dbManager } = await initializeDatabase();
     
     // 3. Seleccionar el "store" dinámicamente para evitar repetición
-    const store = manager.store(data.storeName);
+    const store = dbManager.store(data.storeName);
     const updateData = await syncController.getSync(data.storeName);
 
     const filteredData = filterByValidValues(updateData.data, 3);
@@ -34,34 +34,6 @@ ws.on('sync:change', async (data) => {
     store.addMany(filteredData);
     emitter.emit('sync:change', data);
     return
-    if (!store) {
-      console.warn(`Store no encontrado: ${data.storeName}`);
-      return;
-    }
-    const { items,id } = data.data;
-    const ItemsArray = Array.isArray(items) ? items : [items];
-    switch (data.action) {
-      case 'create':
-        await store.addMany(ItemsArray);
-        break;
-
-      case 'update':
-        await store.updateMany(ItemsArray);
-        
-        break;
-
-      case 'delete':
-        // El método delete espera el ID, que usualmente está en data.data.id
-        await store.delete(id);
-        break;
-
-      default:
-        console.warn(`Acción desconocida en sync:change: ${data.action}`);
-        return; // Salir si la acción no es reconocida
-    }
-
-    console.log(`[sync:change] Acción '${data.action}' aplicada al store '${data.storeName}'`, data.data);
-
   } catch (error) {
     // 5. Manejo de errores en caso de que falle una operación
     console.error('Error procesando el evento sync:change:', {
@@ -128,10 +100,20 @@ const taskSchema: DatabaseSchema = {
 // Initialize database manager
 const dbManager = new IndexedDBManager(pointSalesSchema, { autoInit: true });
 const taskManager = new IndexedDBManager(taskSchema, { autoInit: true });
-const allEvents = ['add', 'update', 'delete', 'clear','import'];
+const allEvents = ['add', 'update', 'delete', 'clear', 'import'];
+let debounceTimer: NodeJS.Timeout;
+let pendingEvents: any[] = [];
+
 allEvents.forEach(event => {
   dbManager.on(event, (data) => {
-    emitter.emit('sync:change', { action: event,data });
+    pendingEvents.push({ action: event, data });
+    
+    clearTimeout(debounceTimer);
+    
+    debounceTimer = setTimeout(() => {
+      emitter.emit('sync:change', pendingEvents);
+      pendingEvents = [];
+    }, 300);
   });
 });
 // ============================================
@@ -479,19 +461,12 @@ export const ticketService = new TicketService();
 export const customerService = new CustomerService();
 
 async function initializeDatabase() {
-  const manager = await dbManager;
-  const taskmanager = await taskManager;
-  const productStore = manager.store('products');
-  const ticketStore = manager.store('tickets');
-  const customerStore = manager.store('customers');
-  const taskStore = taskmanager.store('sync_tasks');
-  
-  syncManager.initialize();
-  const updateData = await syncController.getSync('products');
-
-  const filteredData = filterByValidValues(updateData.data, 3);
-  productStore.clear();
-  productStore.addMany(filteredData);
+  const productStore = dbManager.store('products');
+  const ticketStore = dbManager.store('tickets');
+  const customerStore = dbManager.store('customers');
+  const taskStore = taskManager.store('sync_tasks');
+  dbManager.openDatabase();
+  syncProducts();
   console.log('✅ Database and sync initialized');
   
   return {
@@ -499,8 +474,18 @@ async function initializeDatabase() {
     ticketStore,
     customerStore,
     taskStore,
-    manager
+    dbManager,
+    taskManager
   };
 }
-
-export { initializeDatabase, seedData, dbManager,taskManager }
+async function syncProducts(){
+  const updateData = await syncController.getSync('products');
+  if (updateData && Array.isArray(updateData.data)){
+    syncManager.initialize();
+    const filteredData = filterByValidValues(updateData.data, 3);
+    dbManager.store('products').clear();
+    dbManager.store('products').addMany(filteredData);
+    console.log('Products updated from sync');
+  }
+}
+export { initializeDatabase, seedData, dbManager,taskManager,syncProducts }

@@ -79,10 +79,9 @@ const tableActions = [
 
 // --- Ciclo de Vida ---
 onMounted(async () => {
-  const {manager} = await initializeDatabase(); // Asegura que la DB esté lista y sembrada
+  await fetchProducts();
   emitter.on('sync:change', fetchProducts);
 
-  await fetchProducts();
 });
 onUnmounted(() => {
   emitter.off('sync:change', fetchProducts);
@@ -92,6 +91,11 @@ async function fetchProducts() {
   isLoading.value = true;
   try {
     const allProducts  = await productService.getAllProducts();
+    if (!allProducts || !Array.isArray(allProducts)){
+      console.error("Failed to load products from IndexedDB: Invalid data");
+      isLoading.value = false;
+      return;
+    }
     products.value = allProducts as Product[];
   } catch (error) {
     console.error("Error al cargar los productos:", error);

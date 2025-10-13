@@ -59,6 +59,9 @@ export class QRCodeService {
     options: QRCodeGenerationOptions = {}
   ): Promise<string> {
     try {
+      /*
+        generar FIRMA HASH {ticketInfo}
+      */
       const mergedOptions = { ...this.defaultOptions, ...options }
       const ticketUrl = this.buildTicketInfoURL(ticketInfo)
       

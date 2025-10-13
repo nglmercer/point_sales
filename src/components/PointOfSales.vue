@@ -12,7 +12,7 @@ import SimpleTicketViewer from './ticket/SimpleTicketViewer.vue'
 import MainForm from './Forms/MainForm.vue'
 import '@litcomponents/dialog.js'
 import '@litcomponents/CInput.js'
-import { productService, seedData,initializeDatabase,ticketService } from '@/utils/idb/StoreManager.js'
+import { productService, seedData,initializeDatabase,ticketService,syncProducts } from '@/utils/idb/StoreManager.js'
 import type{ CartItem,CustomerData,TicketData,Product as DBProduct, } from '@/utils/idb/StoreManager.js'
 import { emitter } from '@/utils/Emitter.js'
 // --- Type Definitions ---
@@ -381,14 +381,13 @@ const handleViewportChange = () => {
 }
 
 onMounted(async () => {
-  await initializeDatabase();
   await loadProductsFromDB();
-  const initalData = await productService.getAllProducts()
+  const initalData = await productService.getAllProducts();
   handleDatabaseUpdate(initalData);
   emitter.on('sync:change', handleDatabaseUpdate);
   // Populate products
-  productsByCategory.value = seedData;
-  allProducts.value = Object.values(seedData).flat();
+/*   productsByCategory.value = seedData;
+  allProducts.value = Object.values(seedData).flat(); */
 
   parseTicketFromURL()
   resizeListener.value = handleViewportChange
