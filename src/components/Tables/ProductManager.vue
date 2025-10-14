@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, nextTick, onUnmounted } from 'vue';
-import { productService, initializeDatabase, type Product } from '@/utils/idb/StoreManager';
+import { productService, initializeDatabase, type Product,updateDB } from '@/utils/idb/StoreManager';
 import DataTable from '@/components/Tables/DataTable.vue';
 import MainForm from '@/components/Forms/MainForm.vue'; // Asume que MainForm está en esta ruta
 import {DlgCont} from '@/litcomponents/dialog.ts';
@@ -79,9 +79,9 @@ const tableActions = [
 
 // --- Ciclo de Vida ---
 onMounted(async () => {
-  await fetchProducts();
+  await updateDB({action:'get',storeName:'products',data:[]});
   emitter.on('sync:change', fetchProducts);
-
+  setTimeout(fetchProducts, 2000);
 });
 onUnmounted(() => {
   emitter.off('sync:change', fetchProducts);
@@ -91,11 +91,6 @@ async function fetchProducts() {
   isLoading.value = true;
   try {
     const allProducts  = await productService.getAllProducts();
-    if (!allProducts || !Array.isArray(allProducts)){
-      console.error("Failed to load products from IndexedDB: Invalid data");
-      isLoading.value = false;
-      return;
-    }
     products.value = allProducts as Product[];
   } catch (error) {
     console.error("Error al cargar los productos:", error);

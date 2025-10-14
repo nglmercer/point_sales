@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, nextTick, onUnmounted } from 'vue';
-import { ticketService, initializeDatabase, type TicketData } from '@/utils/idb/StoreManager';
+import { ticketService, initializeDatabase, type TicketData,updateDB } from '@/utils/idb/StoreManager';
 import InformativeAlert from './InformativeAlert.vue';
 import DataTable from '@/components/Tables/DataTable.vue';
 import MainForm from '@/components/Forms/MainForm.vue';
@@ -182,6 +182,7 @@ const tableActions = [
 
 // --- Ciclo de Vida ---
 onMounted(async () => {
+  await updateDB({action:'get',storeName:'tickets',data:[]});
   emitter.on('sync:change', fetchTickets);
   setTimeout(fetchTickets, 2000);
 });
@@ -195,11 +196,6 @@ async function fetchTickets() {
   isLoading.value = true;
   try {
     const allTickets = await ticketService.getAllTickets();
-    if (!allTickets || !Array.isArray(allTickets)) {
-      console.error("Failed to load tickets from IndexedDB: Invalid data");
-      isLoading.value = false;
-      return;
-    }
     tickets.value = allTickets as TicketData[];
   } catch (error) {
     console.error("Error al cargar los tickets:", error);

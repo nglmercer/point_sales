@@ -32,7 +32,7 @@ const apiConfig: ApiConfig = {
   port: import.meta.env.VITE_API_PORT || 3000,
   protocol: 'http',
   getFullUrl(): string {
-    return `${this.protocol}://${this.host}:${this.port}`;
+    return import.meta.env.DEV ? `${this.protocol}://${this.host}:${this.port}` : window.location.origin;
   },
   update(newConfig) {
     Object.assign(this, newConfig);

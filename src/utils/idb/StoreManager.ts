@@ -15,25 +15,8 @@ const filterByValidValues = (array: any[], minValidValues: number) => {
   });
 };
 ws.on('sync:change', async (data) => {
-  // 1. Validación de entrada más robusta
-  if (!data || typeof data.action !== 'string' || typeof data.storeName !== 'string' || !data.data) {
-    console.warn('Evento sync:change recibido con datos inválidos:', data);
-    return;
-  }
-
   try {
-    // 2. Obtener el manejador de la base de datos
-    const { dbManager } = await initializeDatabase();
-    
-    // 3. Seleccionar el "store" dinámicamente para evitar repetición
-    const store = dbManager.store(data.storeName);
-    const updateData = await syncController.getSync(data.storeName);
-
-    const filteredData = filterByValidValues(updateData.data, 3);
-    store.clear();
-    store.addMany(filteredData);
-    emitter.emit('sync:change', data);
-    return
+    await updateDB(data);
   } catch (error) {
     // 5. Manejo de errores en caso de que falle una operación
     console.error('Error procesando el evento sync:change:', {
@@ -42,6 +25,22 @@ ws.on('sync:change', async (data) => {
     });
   }
 });
+export async function updateDB(data:any) {
+    if (!data || typeof data.action !== 'string' || typeof data.storeName !== 'string' || !data.data) {
+      console.warn('Evento sync:change recibido con datos inválidos:', data);
+      return false;
+    }
+    const { dbManager } = await initializeDatabase();
+    
+    const store = dbManager.store(data.storeName);
+    const updateData = await syncController.getSync(data.storeName);
+
+    const filteredData = filterByValidValues(updateData.data, 3);
+    store.clear();
+    store.addMany(filteredData);
+    emitter.emit('sync:change', data);
+    return true;
+}
 // Database Schema
 const pointSalesSchema: DatabaseSchema = {
   name: 'PointSales',
