@@ -1,7 +1,7 @@
 <template>
-  <div :class="mobile ? 'h-full flex flex-col justify-center bg-white min-w-100 relative' : 'max-w-md bg-white rounded-lg shadow-lg min-w-100 h-full'">
+  <div :class="mobile ? 'h-full flex flex-col justify-center bg-white min-w-100 relative max-h-[max(70dvh,calc(100vh-4rem))] overflow-auto' : 'max-w-md bg-white rounded-lg shadow-lg min-w-100 h-full overflow-auto max-h-[max(70dvh,calc(100vh-4rem))]'">
     
-      <div :class="mobile ? 'p-4 border-b bg-blue-600 text-white' : 'p-6 border-b'">
+      <div :class="mobile ? 'p-4 border-b bg-blue-600 text-white' : 'p-2 border-b'">
         <div class="flex items-center justify-between">
           <h2 :class="mobile ? 'text-lg font-semibold' : 'text-xl font-semibold text-gray-800'">
             {{ showTicket ? t('ticketForm.yourReceipt') : t('ticketForm.customerInfo') }}
@@ -18,7 +18,7 @@
         </div>
       </div>
       <!-- Customer Form -->
-      <div v-if="!showTicket" :class="mobile ? 'p-2' : 'p-4'">
+      <div v-if="!showTicket" :class="mobile ? 'p-2 overflow-auto' : 'p-4 overflow-auto'">
         <form @submit.prevent="generateTicket" class="space-y-4">
           <!-- Name -->
           <div>
