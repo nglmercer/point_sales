@@ -29,6 +29,9 @@
               :class="['btn-action', action.class || 'btn-secondary']"
               @click="handleActionClick(action.event, item)"
             >
+              <span v-if="action.icon" class="material-symbols-outlined">
+                {{ action.icon }}
+              </span>
               {{ action.label }}
             </button>
           </td>
@@ -52,6 +55,7 @@ interface ActionDefinition {
   label: string;
   event: string;
   class?: string; // Para estilos personalizados (e.g., 'btn-danger')
+  icon?: string; // Icono de Material Symbols
 }
 
 // --- Props ---
@@ -178,6 +182,9 @@ tbody tr:hover {
   color: white;
   cursor: pointer;
   transition: opacity 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .btn-action:hover {
@@ -197,5 +204,14 @@ tbody tr:hover {
 .btn-danger {
     background-color: var(--btn-danger-bg);
     border-color: var(--btn-danger-border);
+}
+
+.material-symbols-outlined {
+  font-size: 1.1rem;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 20;
 }
 </style>

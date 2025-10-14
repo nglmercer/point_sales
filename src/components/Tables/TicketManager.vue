@@ -6,7 +6,15 @@
         Añadir Ticket
       </button>
     </header>
-
+    <InformativeAlert
+    v-if="showInfo"
+    title="Detalles del Ticket"
+    message="Información del ticket seleccionado"
+    :details="infoData"
+    color="blue"
+    :initially-expanded="true"
+    class="absolute top-0 left-0 z-50"
+    />
     <DataTable
       :items="tickets"
       :columns="tableColumns"
@@ -33,6 +41,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, nextTick, onUnmounted } from 'vue';
 import { ticketService, initializeDatabase, type TicketData } from '@/utils/idb/StoreManager';
+import InformativeAlert from './InformativeAlert.vue';
 import DataTable from '@/components/Tables/DataTable.vue';
 import MainForm from '@/components/Forms/MainForm.vue';
 import { DlgCont } from '@/litcomponents/dialog.ts';
@@ -40,6 +49,27 @@ import { emitter } from '@/utils/Emitter';
 import type { FormConfig } from '@/utils/form-config';
 import '@/litcomponents/CInput';
 // --- Configuración del Formulario de Tickets ---
+// --- Estado para alertas informativas ---
+const showInfo = ref(false);
+const infoData = ref<any>(null);
+function viewTicket(ticket: TicketData) {
+  infoData.value = {
+    ID: ticket.ticketID,
+    Cliente: ticket.customerData?.name,
+    Total: `$${ticket.total.toFixed(2)}`,
+    Productos: `${ticket.cartItems?.length || 0} ítems`,
+    Fecha: ticket.date,
+    Hora: ticket.time
+  };
+
+  showInfo.value = true;
+
+  // Cierra la alerta automáticamente después de unos segundos (opcional)
+  setTimeout(() => {
+    showInfo.value = false;
+  }, 8000);
+}
+
 const ticketFormConfig: FormConfig = {
   'ticketID': {
     type: 'text',
@@ -90,13 +120,11 @@ const ticketFormConfig: FormConfig = {
   },
   'date': {
     type: 'date',
-    label: 'Fecha',
-    required: true
+    label: 'Fecha'
   },
   'time': {
     type: 'time',
-    label: 'Hora',
-    required: true
+    label: 'Hora'
   }
 };
 
@@ -147,9 +175,9 @@ const tableColumns = [
 ];
 
 const tableActions = [
-  { label: 'Ver', event: 'view', class: 'btn-info' },
-  { label: 'Editar', event: 'edit', class: 'btn-primary' },
-  { label: 'Eliminar', event: 'delete', class: 'btn-danger' }
+  { label: 'Ver', event: 'view', class: 'btn-info', icon: 'visibility' },
+  { label: 'Editar', event: 'edit', class: 'btn-primary', icon: 'edit' },
+  { label: 'Eliminar', event: 'delete', class: 'btn-danger', icon: 'delete' }
 ];
 
 // --- Ciclo de Vida ---
@@ -215,11 +243,6 @@ function handleTableAction(eventName: string, ticket: TicketData) {
       }
       break;
   }
-}
-
-function viewTicket(ticket: TicketData) {
-  // Acción adicional: mostrar detalles del ticket
-  alert(`Ticket: ${ticket.ticketID}\nCliente: ${ticket.customerData?.name}\nTotal: $${ticket.total.toFixed(2)}\n\nProductos: ${ticket.cartItems?.length || 0} items`);
 }
 
 async function deleteTicket(ticketId: string) {
