@@ -1,5 +1,5 @@
 <template>
-  <div :class="mobile ? 'h-full flex flex-col bg-white min-w-100' : 'max-w-md bg-white rounded-lg shadow-lg min-w-100 h-full'">
+  <div :class="mobile ? 'h-full flex flex-col justify-center bg-white min-w-100 relative' : 'max-w-md bg-white rounded-lg shadow-lg min-w-100 h-full'">
     
       <div :class="mobile ? 'p-4 border-b bg-blue-600 text-white' : 'p-6 border-b'">
         <div class="flex items-center justify-between">
@@ -18,7 +18,7 @@
         </div>
       </div>
       <!-- Customer Form -->
-      <div v-if="!showTicket" :class="mobile ? 'p-4' : 'p-6'">
+      <div v-if="!showTicket" :class="mobile ? 'p-2' : 'p-4'">
         <form @submit.prevent="generateTicket" class="space-y-4">
           <!-- Name -->
           <div>
@@ -125,6 +125,7 @@
           :is-visible="true"
           :ticket-data="generatedTicketData"
           :show-brand-header="true"
+          :show-header="!mobile"
           :show-footer="true"
           :show-order-items="true"
           :show-qr-code="true"
@@ -278,21 +279,5 @@ const generateTicket = async (): Promise<void> => {
   padding: 0 !important;
 }
 
-:deep(.bg-white.rounded-lg.shadow-2xl) {
-  box-shadow: none !important;
-  max-width: none !important;
-  max-height: none !important;
-  overflow: visible !important;
-}
 
-:deep(.border-b.bg-blue-600) {
-  display: none !important;
-}
-
-:deep(.p-6.border-t.bg-gray-50) {
-  background: transparent !important;
-  border: none !important;
-  padding: 0 !important;
-  margin-top: 1rem !important;
-}
 </style>

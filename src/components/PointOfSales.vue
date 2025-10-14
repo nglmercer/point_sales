@@ -294,15 +294,6 @@ const handleTicketGenerated = async (ticketData: TicketData) => {
   } catch (error) {
     console.error('Error saving ticket:', error);
   }  
-  
-  // Cerrar formularios
-  showMobileTicketForm.value = false
-  showDesktopTicketForm.value = false
-  
-  if (window.innerWidth < 768) {
-    handleMobileTabClick('menu')
-  }
-  
   clearCart()
   
   // Resetear el flag de procesamiento

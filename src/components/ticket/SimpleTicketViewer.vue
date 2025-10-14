@@ -2,7 +2,7 @@
   <div v-if="isVisible" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-lg shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden">
       <!-- Header -->
-      <div class="border-b bg-blue-600 text-white p-4 no-print">
+      <div v-if="showHeader" class="border-b bg-blue-600 text-white p-4 no-print">
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-bold">{{ displayTitle }}</h2>
           <button 
@@ -141,6 +141,7 @@ interface UnifiedTicketViewerProps {
   showQRCode?: boolean
   showPrintButton?: boolean
   showBrandHeader?: boolean
+  showHeader?: boolean
   showFooter?: boolean
   showOrderItems?: boolean
   visibleFields?: string[]
@@ -163,6 +164,7 @@ const props = withDefaults(defineProps<UnifiedTicketViewerProps>(), {
   showQRCode: true,
   showPrintButton: true,
   showBrandHeader: true,
+  showHeader: true,
   showFooter: true,
   showOrderItems: true,
   visibleFields: () => ['ticketID', 'date', 'time', 'customer', 'dni', 'phone', 'orderType', 'total'],
