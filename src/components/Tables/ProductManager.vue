@@ -35,8 +35,8 @@ import { productService, initializeDatabase, type Product } from '@/utils/idb/St
 import DataTable from '@/components/Tables/DataTable.vue';
 import MainForm from '@/components/Forms/MainForm.vue'; // Asume que MainForm está en esta ruta
 import {DlgCont} from '@/litcomponents/dialog.ts';
-import { CInput } from '@/litcomponents/CInput';
 import { emitter } from '@/utils/Emitter';
+import '@/litcomponents/CInput';
 // --- Estado Reactivo ---
 const products = ref<Product[]>([]);
 const isLoading = ref(true);

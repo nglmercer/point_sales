@@ -38,7 +38,7 @@ import MainForm from '@/components/Forms/MainForm.vue';
 import { DlgCont } from '@/litcomponents/dialog.ts';
 import { emitter } from '@/utils/Emitter';
 import type { FormConfig } from '@/utils/form-config';
-
+import '@/litcomponents/CInput';
 // --- Configuración del Formulario de Tickets ---
 const ticketFormConfig: FormConfig = {
   'ticketID': {
@@ -154,8 +154,8 @@ const tableActions = [
 
 // --- Ciclo de Vida ---
 onMounted(async () => {
-  await fetchTickets();
   emitter.on('sync:change', fetchTickets);
+  setTimeout(fetchTickets, 2000);
 });
 
 onUnmounted(() => {
