@@ -56,6 +56,7 @@
 <script setup>
 import LanguageSwitcher from './LanguageSwitcher.vue'
 import Logo from '../Logo.vue'
+import { Capacitor } from '@capacitor/core'
 defineProps({
   cartItemCount: {
     type: Number,
@@ -70,9 +71,20 @@ defineProps({
 defineEmits(['cart-click', 'back-click'])
 
 const redirectAdmin = () => {
-  window.location.href = '/admin'
+  if (Capacitor.isNativePlatform()) {
+    // En Capacitor, navega al archivo HTML directamente
+    window.location.href = `${window.location.origin}/admin/index.html`
+  } else {
+    // En web, usa la ruta normal
+    window.location.href = '/admin'
+  }
 }
+
 const redirectTickets = () => {
-  window.location.href = '/tickets'
+  if (Capacitor.isNativePlatform()) {
+    window.location.href = `${window.location.origin}/tickets/index.html`
+  } else {
+    window.location.href = '/tickets'
+  }
 }
 </script>
