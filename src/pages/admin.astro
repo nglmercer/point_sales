@@ -1,6 +1,12 @@
 ---
-import '../styles/global.css';
-import ProductManager from '../components/Tables/ProductManager.vue';
+import "../styles/global.css";
+import ProductManager from "../components/Tables/ProductManager.vue";
+import ApiConfig from "../components/Forms/ConfigApi.vue";
+import MaterialIcon from "../components/MaterialIcon.astro";
+const baseBtn = "p-4 flex justify-center align-center";
+const floatBtn = "bg-blue-600 hover:bg-blue-800 rounded-full";
+const linkBtn = "bg-gray-600 hover:bg-gray-800 rounded-full";
+const absoluteRight4 = "absolute right-4";
 ---
 
 <html lang="en">
@@ -11,7 +17,104 @@ import ProductManager from '../components/Tables/ProductManager.vue';
 		<meta name="generator" content={Astro.generator} />
 		<title>Modify Tables</title>
 	</head>
-	<body class="bg-black font-sans">
+	<body class="bg-black font-sans"
+		>
 		<ProductManager client:only="vue" />
+		<ApiConfig client:only="vue" />
+		<button
+			type="button"
+			id="ConfigTrigger"
+			class={`${baseBtn} ${linkBtn} ${absoluteRight4} bottom-36`}
+		>
+			<MaterialIcon icon="settings" />
+		</button>
 	</body>
+	<style is:global>
+		:root {
+			/* Primary Fire Colors */
+			--fire-orange: #ff6b35;
+			--fire-red: #e63946;
+			--fire-yellow: #ffd60a;
+			--fire-purple: #9d4edd;
+
+			/* Background Colors */
+			--bg-primary: #0f0f0f;
+			--bg-secondary: #1a1a1a;
+			--bg-tertiary: #2a2a2a;
+			--bg-overlay: rgba(15, 15, 15, 0.95);
+
+			/* Text Colors */
+			--text-primary: #ffffff;
+			--text-secondary: #b8b8b8;
+			--text-muted: #6b7280;
+			--text-accent: var(--fire-orange);
+
+			/* Success, Warning, Error */
+			--success: #10b981;
+			--warning: #f59e0b;
+			--error: #ef4444;
+
+			/* Borders */
+			--border-primary: #374151;
+			--border-accent: var(--fire-orange);
+
+			/* Shadows */
+			--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+			--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+			--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+			--shadow-glow: 0 0 20px rgba(255, 107, 53, 0.3);
+
+			/* Spacing */
+			--space-1: 0.25rem;
+			--space-2: 0.5rem;
+			--space-3: 0.75rem;
+			--space-4: 1rem;
+			--space-5: 1.25rem;
+			--space-6: 1.5rem;
+			--space-8: 2rem;
+			--space-10: 2.5rem;
+			--space-12: 3rem;
+			--space-16: 4rem;
+			--space-20: 5rem;
+
+			/* Border Radius */
+			--radius-sm: 0.25rem;
+			--radius-md: 0.5rem;
+			--radius-lg: 0.75rem;
+			--radius-xl: 1rem;
+
+			/* Transitions */
+			--transition-fast: 0.15s ease;
+			--transition-normal: 0.3s ease;
+			--transition-slow: 0.5s ease;
+		}
+		.btn {
+			padding: 10px 20px;
+			border: none;
+			border-radius: 6px;
+			font-size: 0.9rem;
+			font-weight: 500;
+			cursor: pointer;
+			transition: all 0.2s ease;
+		}
+
+		.btn-primary {
+			background-color: #007bff;
+			color: white;
+		}
+
+		.btn-primary:hover {
+			background-color: #0056b3;
+		}
+		.btn-secondary {
+			background: var(--bg-tertiary);
+			color: var(--text-primary);
+			border: 1px solid var(--border-primary);
+		}
+
+		.btn-secondary:hover {
+			background: var(--bg-secondary);
+			border-color: var(--border-accent);
+		}
+	</style>
 </html>

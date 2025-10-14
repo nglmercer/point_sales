@@ -16,7 +16,23 @@
       </div>
           <!-- Language Switcher Component -->
     <LanguageSwitcher />
-      <!-- Right side: Cart Icon -->
+    <!-- REDIRECT TO ADMIN-->
+      <button
+      class="btn btn-primary"
+      id="cart-button"
+      @click="redirectAdmin"
+      >
+      <span class="material-symbols-outlined">admin_panel_settings</span>
+      </button>
+          <!-- REDIRECT TO tickets-->
+      <button
+      class="btn btn-primary"
+      id="cart-button"
+      @click="redirectTickets"
+      >
+      <span class="material-symbols-outlined">receipt</span>
+      </button>
+    <!-- Right side: Cart Icon -->
       <div class="flex items-center space-x-4">
         <button 
           class="relative p-2"
@@ -52,4 +68,11 @@ defineProps({
 })
 
 defineEmits(['cart-click', 'back-click'])
+
+const redirectAdmin = () => {
+  window.location.href = '/admin'
+}
+const redirectTickets = () => {
+  window.location.href = '/tickets'
+}
 </script>
