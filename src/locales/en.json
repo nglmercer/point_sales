@@ -38,7 +38,6 @@
   },
   "ticket": {
     "title": "Generate Ticket",
-    "generated": "Ticket generated successfully!",
     "backToCart": "Back to Cart"
   },
   "navigation": {
@@ -47,8 +46,7 @@
     "ticket": "Ticket"
   },
   "messages": {
-    "cartEmpty": "Cart is empty!",
-    "ticketGenerated": "Ticket generated successfully!"
+    "cartEmpty": "Cart is empty!"
   },
   "orderSummary": {
     "title": "New Order",
@@ -83,7 +81,6 @@
     "total": "Total:",
     "generateTicketButton": "Generate Ticket & Process Payment",
     "processing": "Processing...",
-    "success": "Ticket generated successfully!",
     "ticketID": "Ticket #:",
     "date": "Date:",
     "time": "Time:",

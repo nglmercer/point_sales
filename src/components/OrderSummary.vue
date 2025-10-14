@@ -5,7 +5,7 @@
         <h2 class="text-xl font-semibold">{{ mobile ? t('orderSummary.mobileTitle') : t('orderSummary.title') }}</h2>
         <button 
           class="p-2 hover:bg-gray-100 rounded-lg transition-colors" 
-          @click="() => emit('clear-cart')"
+          @click="handleClearCart"
           v-if="cartItems.length > 0"
           :title="t('orderSummary.clearCart')"
         >
@@ -60,7 +60,7 @@
           <div class="flex items-center space-x-2">
             <button 
               class="w-8 h-8 rounded-full bg-white border flex items-center justify-center hover:bg-gray-50" 
-              @click="() => emit('update-quantity', item.id, item.quantity - 1)"
+              @click="handleDecreaseQuantity(item)"
               :title="t('orderSummary.decreaseQuantity')"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,7 +70,7 @@
             <span class="w-8 text-center font-medium">{{ item.quantity }}</span>
             <button 
               class="w-8 h-8 rounded-full bg-white border flex items-center justify-center hover:bg-gray-50" 
-              @click="() => emit('update-quantity', item.id, item.quantity + 1)"
+              @click="handleIncreaseQuantity(item)"
               :title="t('orderSummary.increaseQuantity')"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,7 +81,7 @@
           
           <button 
             class="p-2 hover:bg-gray-200 rounded-lg transition-colors" 
-            @click="() => emit('remove-item', item.id)"
+            @click="handleRemoveItem(item)"
             :title="t('orderSummary.removeItem')"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,12 +103,11 @@
         <!-- Generate Ticket Button -->
         <button 
           class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
-          @click="() => emit('process-payment')"
+          @click="handleProcessPayment"
+          :disabled="isProcessing"
         >
           <span>{{ t('orderSummary.generateTicket') }}</span>
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-          </svg>
+          <span class="material-symbols-outlined">receipt</span>
         </button>
       </div>
     </div>
@@ -135,6 +134,7 @@ const props = defineProps({
 const emit = defineEmits(['update-quantity', 'remove-item', 'clear-cart', 'process-payment'])
 
 const imageErrors = ref(new Set())
+const isProcessing = ref(false)
 
 const totalAmount = computed(() => {
   if (!props.cartItems || props.cartItems.length === 0) {
@@ -153,6 +153,35 @@ const getImageError = (itemId) => {
 
 const setImageError = (itemId) => {
   imageErrors.value.add(itemId)
+}
+
+// Event handlers - properly defined methods
+const handleClearCart = () => {
+  emit('clear-cart')
+}
+
+const handleDecreaseQuantity = (item) => {
+  emit('update-quantity', item.id, item.quantity - 1)
+}
+
+const handleIncreaseQuantity = (item) => {
+  emit('update-quantity', item.id, item.quantity + 1)
+}
+
+const handleRemoveItem = (item) => {
+  emit('remove-item', item.id)
+}
+
+const handleProcessPayment = () => {
+  if (isProcessing.value) return
+  
+  isProcessing.value = true
+  emit('process-payment')
+  
+  // Reset processing state after a short delay
+  setTimeout(() => {
+    isProcessing.value = false
+  }, 500)
 }
 
 // Stock management functions

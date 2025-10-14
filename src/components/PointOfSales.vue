@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref,toRaw, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { prepareForIndexedDB, cleanReactiveObject, serializeTicketData } from '@/utils/vueUtils'
 import { useI18n } from 'vue-i18n'
 import { getCurrentLanguage } from '../utils/i18n.js'
@@ -7,14 +7,15 @@ import TicketForm from './ticket/TicketForm.vue'
 import DesktopLayout from './navigation/DesktopLayout.vue'
 import MobileLayout from './navigation/MobileLayout.vue'
 import NotificationComponent from './NotificationComponent.vue'
-import TicketOptionsModal from './ticket/TicketOptionsModal.vue'
 import SimpleTicketViewer from './ticket/SimpleTicketViewer.vue'
 import MainForm from './Forms/MainForm.vue'
 import '@litcomponents/dialog.js'
 import '@litcomponents/CInput.js'
-import { productService, seedData,initializeDatabase,ticketService,syncProducts } from '@/utils/idb/StoreManager.js'
-import type{ CartItem,CustomerData,TicketData,Product as DBProduct, } from '@/utils/idb/StoreManager.js'
+import { productService, seedData, initializeDatabase, ticketService, syncProducts } from '@/utils/idb/StoreManager.js'
+import type { CartItem, CustomerData, TicketData, Product as DBProduct } from '@/utils/idb/StoreManager.js'
 import { emitter } from '@/utils/Emitter.js'
+import { DataSigner } from '@/utils/sign/signer.js'
+
 // --- Type Definitions ---
 interface Category {
   id: string;
@@ -47,7 +48,6 @@ const searchQuery = ref<string>('')
 const currentMobileView = ref<'menu' | 'cart'>('menu')
 const showMobileTicketForm = ref<boolean>(false)
 const showDesktopTicketForm = ref<boolean>(false)
-const showTicketModal = ref<boolean>(false)
 const currentTicketData = ref<TicketData | null>(null)
 const showTicketViewer = ref<boolean>(false)
 const mobileTicketFormRef = ref<InstanceType<typeof TicketForm> | null>(null)
@@ -59,6 +59,7 @@ const urlTicketData = ref({
   customer: '',
   total: ''
 })
+const ticketSigner = new DataSigner<TicketData>('default')
 
 // Viewport tracking for modal management
 const isDesktop = ref<boolean>(window.innerWidth >= 768)
@@ -66,10 +67,14 @@ const resizeListener = ref<(() => void) | null>(null)
 const allProducts = ref<DBProduct[]>([])
 const productsByCategory = ref<Record<string, DBProduct[]>>({})
 
+// Estado para rastrear si estamos procesando
+const isProcessingPayment = ref<boolean>(false)
+
 // Computed properties
 const currentProducts = computed<DBProduct[]>(() => {
   return productsByCategory.value[currentCategory.value] || []
 })
+
 const loadProductsFromDB = async () => {
   try {
     const products = await productService.getAllProducts() as DBProduct[];
@@ -89,13 +94,14 @@ const loadProductsFromDB = async () => {
 
   } catch (error) {
     console.error("Failed to load products from IndexedDB:", error);
-    // Opcional: manejar el error, por ejemplo, mostrando una notificación al usuario
   }
 };
+
 const handleDatabaseUpdate = (data: any) => {
   console.log(`Database event triggered:`, data);
   loadProductsFromDB();
 };
+
 const filteredProducts = computed<DBProduct[]>(() => {
   if (!searchQuery.value) {
     return currentProducts.value
@@ -129,7 +135,7 @@ const categoryNavItems = computed<NavItem[]>(() => {
 // Methods
 const handleCategoryChange = (categoryId: string) => {
   currentCategory.value = categoryId
-  searchQuery.value = '' // Clear search when changing category
+  searchQuery.value = ''
 }
 
 const handleCategoryNavClick = (item: { id: string }) => {
@@ -144,7 +150,6 @@ const addToCart = (productId: string) => {
   const product = allProducts.value.find(p => String(p.id) === String(productId))
   if (!product) return
 
-  // Check stock availability if stock tracking is enabled
   const hasStockTracking = product.stock !== undefined && product.stock !== null && typeof product.stock === 'number'
   
   if (hasStockTracking) {
@@ -172,7 +177,6 @@ const updateQuantity = (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
       removeFromCart(productId)
     } else {
-      // Check stock availability if stock tracking is enabled
       const product = allProducts.value.find(p => String(p.id) === String(productId))
       if (product) {
         const hasStockTracking = product.stock !== undefined && product.stock !== null && typeof product.stock === 'number'
@@ -198,38 +202,66 @@ const clearCart = () => {
   cart.value = []
 }
 
-const processPayment = () => {
+const processPayment = async () => {
+  // Prevenir múltiples clicks
+  if (isProcessingPayment.value) {
+    console.log('Ya se está procesando un pago')
+    return
+  }
+
   if (cart.value.length === 0) {
     alert(t('messages.cartEmpty'))
     return
   }
+
+  console.log('Iniciando proceso de pago...')
+  isProcessingPayment.value = true
   
-  if (window.innerWidth >= 768) {
-    showDesktopTicketForm.value = true
-    if (desktopTicketFormRef.value) {
-      desktopTicketFormRef.value.resetForm()
+  try {
+    if (window.innerWidth >= 768) {
+      showDesktopTicketForm.value = true
+      await nextTick()
+      if (desktopTicketFormRef.value) {
+        desktopTicketFormRef.value.resetForm()
+      }
+    } else {
+      showMobileTicketForm.value = true
+      await nextTick()
+      if (mobileTicketFormRef.value) {
+        mobileTicketFormRef.value.resetForm()
+      }
     }
-  } else {
-    showMobileTicketForm.value = true
-    if (mobileTicketFormRef.value) {
-      mobileTicketFormRef.value.resetForm()
-    }
+  } finally {
+    setTimeout(() => {
+      isProcessingPayment.value = false
+      console.log('Flag de procesamiento reseteado',{showDesktopTicketForm,showMobileTicketForm})
+    }, 300)
   }
 }
 
 const closeMobileTicketForm = () => {
+  console.log('Cerrando formulario móvil...')
   showMobileTicketForm.value = false
   if (mobileTicketFormRef.value) {
     mobileTicketFormRef.value.resetForm()
   }
+  // Asegurar que el flag se resetee
+  isProcessingPayment.value = false
 }
 
 const closeDesktopTicketForm = () => {
+  console.log('Cerrando formulario desktop...')
   showDesktopTicketForm.value = false
+  if (desktopTicketFormRef.value) {
+    desktopTicketFormRef.value.resetForm()
+  }
+  // Asegurar que el flag se resetee
+  isProcessingPayment.value = false
 }
 
 const handleTicketGenerated = async (ticketData: TicketData) => {
-  // Convert reactive objects to plain objects using toRaw
+  console.log('Ticket generado, procesando...')
+  
   const cleanTicketData = serializeTicketData({
     ...ticketData,
     cartItems: ticketData.cartItems || cart.value,
@@ -243,13 +275,15 @@ const handleTicketGenerated = async (ticketData: TicketData) => {
   }
   
   const { qrCodeDataURL, ...dataToSave } = cleanTicketData
-  console.log('Ticket generated:', dataToSave, { ...dataToSave, id: dataToSave.ticketID })
   
   try {
+    const signedResult = await ticketSigner.sign(dataToSave);
+    
     const result = await ticketService.saveTicket({ 
       ...dataToSave, 
       id: dataToSave.ticketID,
-      cartItems:cleanTicketData.cartItems
+      signature: signedResult.signature,
+      cartItems: cleanTicketData.cartItems
     });
     
     if (result) {
@@ -259,40 +293,21 @@ const handleTicketGenerated = async (ticketData: TicketData) => {
     }
   } catch (error) {
     console.error('Error saving ticket:', error);
-  }
-
-  showTicketModal.value = true
+  }  
   
-  if (showMobileTicketForm.value) {
-    showMobileTicketForm.value = false
-  }
-  
-  if (showDesktopTicketForm.value) {
-    showDesktopTicketForm.value = false
-  }
+  // Cerrar formularios
+  showMobileTicketForm.value = false
+  showDesktopTicketForm.value = false
   
   if (window.innerWidth < 768) {
     handleMobileTabClick('menu')
   }
   
   clearCart()
-}
-
-const closeTicketModal = () => {
-  showTicketModal.value = false
-  currentTicketData.value = null
-}
-
-const handleViewTicket = (ticketData: TicketData) => {
-  console.log('View ticket:', ticketData)
-  closeTicketModal()
-}
-
-const handleContinueShopping = () => {
-  closeTicketModal()
-  if (window.innerWidth < 768) {
-    handleMobileTabClick('menu')
-  }
+  
+  // Resetear el flag de procesamiento
+  isProcessingPayment.value = false
+  console.log('Proceso de ticket completado')
 }
 
 const getCurrentCategoryName = (): string => {
@@ -324,7 +339,6 @@ const parseTicketFromURL = (): boolean => {
   const ticket = urlParams.get('ticket')
   
   if (ticket) {
-    // Extract customer data from URL parameters
     const customerData = {
       name: urlParams.get('customer') || urlParams.get('name') || '',
       email: urlParams.get('email') || '',
@@ -332,7 +346,6 @@ const parseTicketFromURL = (): boolean => {
       address: urlParams.get('address') || ''
     }
     
-    // Build complete ticket info object
     urlTicketData.value = {
       ticket: ticket,
       date: urlParams.get('date') || new Date().toLocaleDateString(),
@@ -358,22 +371,24 @@ const handlePrintTicket = () => {
 }
 
 const closeAllModals = () => {
+  console.log('Cerrando todas las modales...')
   showMobileTicketForm.value = false
   showDesktopTicketForm.value = false
-  showTicketModal.value = false
   if (mobileTicketFormRef.value) {
     mobileTicketFormRef.value.resetForm()
   }
   if (desktopTicketFormRef.value) {
     desktopTicketFormRef.value.resetForm()
   }
+  // Resetear el flag
+  isProcessingPayment.value = false
 }
 
 const handleViewportChange = () => {
   const newIsDesktop = window.innerWidth >= 768
   
   if (newIsDesktop !== isDesktop.value) {
-    if (showMobileTicketForm.value || showDesktopTicketForm.value || showTicketModal.value) {
+    if (showMobileTicketForm.value || showDesktopTicketForm.value) {
       closeAllModals()
     }
     isDesktop.value = newIsDesktop
@@ -385,9 +400,6 @@ onMounted(async () => {
   const initalData = await productService.getAllProducts();
   handleDatabaseUpdate(initalData);
   emitter.on('sync:change', handleDatabaseUpdate);
-  // Populate products
-/*   productsByCategory.value = seedData;
-  allProducts.value = Object.values(seedData).flat(); */
 
   parseTicketFromURL()
   resizeListener.value = handleViewportChange
@@ -404,22 +416,14 @@ onUnmounted(async () => {
 </script>
 
 <template>
-  
   <div class="max-h-dvh h-full">
     <NotificationComponent />
     <SimpleTicketViewer
       :is-visible="showTicketViewer"
+      :ticket-data="currentTicketData"
       :ticket-info="urlTicketData"
       @close="closeTicketViewer"
       @print="handlePrintTicket"
-    />
-
-         <TicketOptionsModal 
-      :is-visible="showTicketModal"
-      :ticket-data="currentTicketData"
-      @close="closeTicketModal"
-      @view-ticket="(payload) => handleViewTicket(payload as TicketData)"
-      @continue-shopping="handleContinueShopping"
     />
 
     <div v-if="showMobileTicketForm" class="fixed inset-0 bg-gray-50 z-30 md:hidden">
@@ -428,11 +432,12 @@ onUnmounted(async () => {
         :mobile="true"
         @ticket-generated="(payload) => handleTicketGenerated(payload as TicketData)"
         @back-to-cart="closeMobileTicketForm"
+        @close="closeMobileTicketForm"
         ref="mobileTicketFormRef"
       />
     </div>
 
-    <dlg-cont :visible="showDesktopTicketForm">
+    <dlg-cont :visible="showDesktopTicketForm" @close="closeDesktopTicketForm">
       <div
         class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl 
               w-full mx-4 overflow-hidden border border-gray-200
@@ -445,6 +450,7 @@ onUnmounted(async () => {
           :mobile="false"
           @ticket-generated="(payload) => handleTicketGenerated(payload as TicketData)"
           @back-to-cart="closeDesktopTicketForm"
+          @close="closeDesktopTicketForm"
           ref="desktopTicketFormRef"
         />
       </div>
@@ -494,4 +500,3 @@ onUnmounted(async () => {
                         
   </div>
 </template>
-

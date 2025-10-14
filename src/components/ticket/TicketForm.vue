@@ -1,27 +1,22 @@
 <template>
-  <div :class="mobile ? 'h-full flex flex-col bg-white' : 'max-w-md bg-white rounded-lg shadow-lg'">
-    <!-- Header -->
-    <div :class="mobile ? 'p-4 border-b bg-blue-600 text-white' : 'p-6 border-b'">
-      <div class="flex items-center justify-between">
-        <h2 :class="mobile ? 'text-lg font-semibold' : 'text-xl font-semibold text-gray-800'">
-          {{ showTicket ? t('ticketForm.yourReceipt') : t('ticketForm.customerInfo') }}
-        </h2>
-        <!-- Cancel/Close Button -->
-        <button
-          @click="handleCancel"
-          :class="mobile ? 'text-white hover:text-gray-200 p-2' : 'text-gray-500 hover:text-gray-700 p-2'"
-          type="button"
-          aria-label="Close"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
+  <div :class="mobile ? 'h-full flex flex-col bg-white min-w-100' : 'max-w-md bg-white rounded-lg shadow-lg min-w-100 h-full'">
+    
+      <div :class="mobile ? 'p-4 border-b bg-blue-600 text-white' : 'p-6 border-b'">
+        <div class="flex items-center justify-between">
+          <h2 :class="mobile ? 'text-lg font-semibold' : 'text-xl font-semibold text-gray-800'">
+            {{ showTicket ? t('ticketForm.yourReceipt') : t('ticketForm.customerInfo') }}
+          </h2>
+          <!-- Cancel/Close Button -->
+          <button
+            @click="handleCancel"
+            :class="mobile ? 'text-white hover:text-gray-200 p-2' : 'text-gray-500 hover:text-gray-700 p-2'"
+            type="button"
+            aria-label="Close"
+          >
+          <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
       </div>
-    </div>
-
-    <!-- Content -->
-    <div :class="mobile ? 'flex-1 overflow-y-auto max-h-dvh' : 'overflow-y-auto max-h-[70dvh]'">
       <!-- Customer Form -->
       <div v-if="!showTicket" :class="mobile ? 'p-4' : 'p-6'">
         <form @submit.prevent="generateTicket" class="space-y-4">
@@ -69,7 +64,7 @@
             />
           </div>
 
-          <!-- Address -->
+          <!-- Description -->
           <div>
             <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
               {{ t('ticketForm.description') }}
@@ -124,103 +119,30 @@
         </form>
       </div>
 
-      <!-- Generated Ticket -->
-      <div v-else :class="mobile ? 'p-4' : 'p-6'">
-        <div ref="ticketRef" class="bg-white border-2 border-dashed border-gray-300 p-4 rounded-lg">
-          <!-- Restaurant Header -->
-          <div class="text-center border-b pb-4 mb-4">
-            <Logo size="lg" :show-text="true" :subtitle="t('ticketForm.thankYou')" />
-          </div>
-
-          <!-- Ticket Info -->
-          <div class="space-y-2 text-sm">
-            <div class="flex justify-between">
-              <span class="font-medium">{{ t('ticketForm.ticketID') }}</span>
-              <span>{{ ticketID }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="font-medium">{{ t('ticketForm.date') }}</span>
-              <span>{{ ticketDate }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="font-medium">{{ t('ticketForm.time') }}</span>
-              <span>{{ ticketTime }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="font-medium">{{ t('ticketForm.orderType') }}:</span>
-              <span class="capitalize">{{ getOrderTypeTranslation(customerData.orderType) }}</span>
-            </div>
-          </div>
-
-          <!-- Customer Info -->
-          <div class="border-t border-b py-4 my-4">
-            <h3 class="font-medium mb-2">{{ t('ticketForm.customerInformation') }}</h3>
-            <div class="space-y-1 text-sm">
-              <div><span class="font-medium">{{ t('ticketForm.name') }}</span> {{ customerData.name }}</div>
-              <div><span class="font-medium">{{ t('ticketForm.dni') }}</span> {{ customerData.dni }}</div>
-              <div v-if="customerData.phone"><span class="font-medium">{{ t('ticketForm.phone') }}</span> {{ customerData.phone }}</div>
-              <div v-if="customerData.address"><span class="font-medium">{{ t('ticketForm.address') }}:</span> {{ customerData.address }}</div>
-            </div>
-          </div>
-
-          <!-- Order Items -->
-          <div class="space-y-2">
-            <h3 class="font-medium">{{ t('ticketForm.orderDetails') }}</h3>
-            <div v-for="item in cartItems" :key="String(item.id)" class="flex justify-between text-sm">
-              <div>
-                <span>{{ item.name }}</span>
-                <span class="text-gray-600"> x{{ item.quantity }}</span>
-              </div>
-              <span>${{ (item.price * item.quantity).toFixed(2) }}</span>
-            </div>
-
-            <!-- Total -->
-            <div class="border-t pt-2 font-semibold flex justify-between">
-              <span>{{ t('ticketForm.totalAmount') }}</span>
-              <span>${{ total.toFixed(2) }}</span>
-            </div>
-          </div>
-
-          <!-- QR Code Section -->
-          <div v-if="qrCodeDataURL" class="text-center mt-4 pt-4 border-t border-dashed border-gray-400">
-            <p class="text-sm mb-2">{{ t('ticketForm.qrCode') }}:</p>
-            <img :src="qrCodeDataURL" alt="QR Code" class="mx-auto" style="width: 150px; height: 150px;">
-          </div>
-
-          <!-- Footer -->
-          <div class="text-center mt-4 text-sm text-gray-600">
-            <p>{{ t('ticketForm.success') }}</p>
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="mt-6 space-y-3">
-          <!-- Back to Menu Button -->
-          <button
-            @click="handleBackToMenu"
-            :class="mobile ? 'w-full bg-gray-600 hover:bg-gray-700 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2' : 'w-full bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2'"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            {{ mobile ? t('ticketForm.backToMenu') : t('ticketForm.close') }}
-          </button>
-        </div>
+      <!-- Generated Ticket using SimpleTicketViewer -->
+      <div v-else :class="'p-2'">
+        <SimpleTicketViewer
+          :is-visible="true"
+          :ticket-data="generatedTicketData"
+          :show-brand-header="true"
+          :show-footer="true"
+          :show-order-items="true"
+          :show-qr-code="true"
+          :show-print-button="true"
+          :close-button-text="t('ticketForm.backToMenu')"
+          :brand-tagline="t('ticketForm.thankYou')"
+          class="border-0 shadow-none"
+          @close="handleBackToMenu"
+        />
       </div>
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { qrCodeService } from '@/utils/QRCodeService.js'
 import type { CartItem, CustomerData as StoreCustomerData, TicketData as StoreTicketData } from '@/utils/idb/StoreManager'
-import Logo from '../Logo.vue'
-// To enable the functions below, you may need to install type definitions:
-// npm install --save-dev @types/jspdf @types/html2canvas
-// import jsPDF from 'jspdf'
-// import html2canvas from 'html2canvas'
+import SimpleTicketViewer from './SimpleTicketViewer.vue'
 
 // --- TYPE DEFINITIONS ---
 
@@ -232,8 +154,9 @@ interface LocalCustomerData {
   phone?: string;
   address?: string;
   description?: string;
-  orderType?: OrderType | ''; // Allow empty string for initial state
+  orderType?: OrderType | '';
 }
+
 // --- PROPS & EMITS ---
 
 const props = withDefaults(defineProps<{
@@ -250,11 +173,9 @@ const emit = defineEmits<{
   (e: 'back-to-cart'): void;
 }>()
 
-
 // --- COMPOSITION API ---
 
 const { t } = useI18n();
-
 
 // --- REACTIVE STATE ---
 
@@ -268,12 +189,7 @@ const customerData = ref<LocalCustomerData>({
   orderType: '',
 });
 
-const ticketID = ref<string>('');
-const ticketDate = ref<string>('');
-const ticketTime = ref<string>('');
-const qrCodeDataURL = ref<string>('');
-const ticketRef = ref<HTMLDivElement | null>(null);
-
+const generatedTicketData = ref<StoreTicketData | null>(null);
 
 // --- COMPUTED PROPERTIES ---
 
@@ -281,47 +197,7 @@ const total = computed<number>(() => {
   return props.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 });
 
-
 // --- METHODS ---
-
-const getOrderTypeTranslation = (orderType: OrderType | '' =''): string => {
-  if (!orderType) return '';
-  const translations: Record<OrderType, string> = {
-    'dine-in': t('ticketForm.orderTypes.dineIn'),
-    'takeout': t('ticketForm.orderTypes.takeout'),
-    'delivery': t('ticketForm.orderTypes.delivery')
-  };
-  return translations[orderType] || orderType;
-}
-
-const generateQRCode = async (): Promise<void> => {
-  try {
-    // Convert local customer data to StoreManager format for QR code
-    const storeCustomerData: StoreCustomerData = {
-      ...customerData.value,
-      id: customerData.value.dni // Use DNI as the ID for customer data
-    };
-
-    // Build ticket data for QR generation
-    const ticketData = {
-      id: ticketID.value,
-      ticketID: ticketID.value,
-      total: total.value,
-      date: ticketDate.value,
-      time: ticketTime.value,
-      customerData: storeCustomerData,
-      cartItems: props.cartItems
-    }
-    
-    qrCodeDataURL.value = await qrCodeService.generateTicketQRCode(ticketData, {
-      width: 200,
-      margin: 2
-    });
-  } catch (error) {
-    console.error('Error generating QR code:', error);
-    qrCodeDataURL.value = ''; // Ensure it's cleared on failure
-  }
-};
 
 const resetForm = (): void => {
   showTicket.value = false;
@@ -330,19 +206,16 @@ const resetForm = (): void => {
     dni: '',
     phone: '',
     address: '',
+    description: '',
     orderType: '',
   };
-  ticketID.value = '';
-  ticketDate.value = '';
-  ticketTime.value = '';
-  qrCodeDataURL.value = '';
+  generatedTicketData.value = null;
 };
 
 // Expose reset function to parent component
 defineExpose({
   resetForm,
 });
-
 
 const handleCancel = (): void => {
   if (showTicket.value) {
@@ -356,74 +229,70 @@ const handleCancel = (): void => {
 
 const handleBackToMenu = (): void => {
   resetForm();
-  emit('complete'); // Signal completion to parent
+  emit('complete');
 };
 
 const generateTicket = async (): Promise<void> => {
   // Generate ticket details
-  ticketID.value = 'MCK' + Date.now().toString().slice(-6);
+  const ticketID = 'MCK' + Date.now().toString().slice(-6);
   const now = new Date();
-  ticketDate.value = now.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-  ticketTime.value = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-
-  // Generate QR code
-  await generateQRCode();
-
-  // Show the ticket view
-  showTicket.value = true;
+  const ticketDate = now.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  const ticketTime = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 
   // Convert local customer data to StoreManager format
   const storeCustomerData: StoreCustomerData = {
     ...customerData.value,
-    id: customerData.value.dni // Use DNI as the ID for customer data
+    id: customerData.value.dni
   };
 
-  // Emit ticket data to parent
-  emit('ticket-generated', {
-    id: ticketID.value,
-    ticketID: ticketID.value,
+  // Build complete ticket data
+  const ticketData: StoreTicketData = {
+    id: ticketID,
+    ticketID: ticketID,
     customerData: storeCustomerData,
     cartItems: props.cartItems,
     total: total.value,
-    date: ticketDate.value,
-    time: ticketTime.value,
-    qrCodeDataURL: qrCodeDataURL.value,
-  });
+    date: ticketDate,
+    time: ticketTime,
+  };
+
+  // Store ticket data for the viewer
+  generatedTicketData.value = ticketData;
+
+  // Show the ticket view
+  showTicket.value = true;
+
+  // Emit ticket data to parent (without qrCodeDataURL as it will be generated by SimpleTicketViewer)
+  emit('ticket-generated', ticketData);
 };
-
-/*
-// --- OPTIONAL TICKET ACTIONS (Uncomment to enable) ---
-
-const downloadTicketPDF = async () => {
-  if (!ticketRef.value) return;
-  
-  const canvas = await html2canvas(ticketRef.value, { scale: 2 });
-  const imgData = canvas.toDataURL('image/png');
-  
-  const pdf = new jsPDF({
-    orientation: 'portrait',
-    unit: 'px',
-    format: [canvas.width, canvas.height]
-  });
-
-  pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-  pdf.save(`ticket-${ticketID.value}.pdf`);
-};
-
-const printTicket = () => {
-  if (!ticketRef.value) return;
-
-  const printWindow = window.open('', '_blank');
-  if (printWindow) {
-    printWindow.document.write('<html><head><title>Print Ticket</title>');
-    // Optional: Add styles for printing
-    printWindow.document.write('<style> body { font-family: sans-serif; } </style>');
-    printWindow.document.write('</head><body>');
-    printWindow.document.write(ticketRef.value.innerHTML);
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.print();
-  }
-};
-*/
 </script>
+
+<style scoped>
+/* Override SimpleTicketViewer styles when embedded */
+:deep(.fixed) {
+  position: relative !important;
+  inset: auto !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  z-index: auto !important;
+  padding: 0 !important;
+}
+
+:deep(.bg-white.rounded-lg.shadow-2xl) {
+  box-shadow: none !important;
+  max-width: none !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+:deep(.border-b.bg-blue-600) {
+  display: none !important;
+}
+
+:deep(.p-6.border-t.bg-gray-50) {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-top: 1rem !important;
+}
+</style>

@@ -38,7 +38,6 @@
   },
   "ticket": {
     "title": "Generar Ticket",
-    "generated": "¡Ticket generado exitosamente!",
     "backToCart": "Volver al Carrito"
   },
   "navigation": {
@@ -47,8 +46,7 @@
     "ticket": "Ticket"
   },
   "messages": {
-    "cartEmpty": "¡El carrito está vacío!",
-    "ticketGenerated": "¡Ticket generado exitosamente!"
+    "cartEmpty": "¡El carrito está vacío!"
   },
   "orderSummary": {
     "title": "Nueva Orden",
@@ -80,7 +78,6 @@
     "total": "Total:",
     "generateTicketButton": "Generar Ticket",
     "processing": "Procesando...",
-    "success": "¡Ticket generado exitosamente!",
     "thankYou": "¡Gracias por tu pedido!",
     "ticketID": "Ticket #:",
     "date": "Fecha:",
